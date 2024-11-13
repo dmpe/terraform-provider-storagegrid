@@ -48,7 +48,7 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 	defaultEmptyTagList, _ := basetypes.NewListValue(types.StringType, []attr.Value{})
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Groups resource",
+		MarkdownDescription: "Create new groups resource",
 		Attributes: map[string]schema.Attribute{
 			"group_urn": schema.StringAttribute{
 				Optional: true,
@@ -85,6 +85,8 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Required: true,
 			},
 			"management_read_only": schema.BoolAttribute{
+				MarkdownDescription: "Select whether users can change settings and perform operations or whether they can only view settings and features."
+				Description: "Select whether users can change settings and perform operations or whether they can only view settings and features."
 				Required: true,
 			},
 			"policies": schema.SingleNestedAttribute{
@@ -106,6 +108,8 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 								Optional: true,
 							},
 							"root_access": schema.BoolAttribute{
+								MarkdownDescription: "Allows users to access all administration features. Root access permission supersedes all other permissions."
+								Description: "Allows users to access all administration features. Root access permission supersedes all other permissions."
 								Optional: true,
 							},
 						},
