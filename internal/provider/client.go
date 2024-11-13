@@ -43,7 +43,7 @@ func NewUsernamePasswordClient(url string, username string, password string, ten
 func (c *S3GridClient) SendAuthorizeRequest(statusCode int) (tokenValue string, respCode int, err error) {
 	var jsonD S3GridClientReturnJson
 
-	address := c.address + api_auth
+	address := c.address + api_suffix + api_auth
 	client := &http.Client{}
 
 	postRequest := &S3GridClientJson{
@@ -105,7 +105,7 @@ func (c *S3GridClient) SendAuthorizeRequest(statusCode int) (tokenValue string, 
 
 // SendRequest send a http request
 func (c *S3GridClient) SendRequest(method string, path string, payload interface{}, statusCode int) (value []byte, respheaders string, respCode int, err error) {
-	address := c.address + path
+	address := c.address + api_suffix + path
 	bearer := "Bearer " + c.token
 	client := &http.Client{}
 
