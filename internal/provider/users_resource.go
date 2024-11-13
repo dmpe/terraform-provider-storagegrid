@@ -50,6 +50,8 @@ func (r *usersResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Required: true,
 			},
 			"disable": schema.BoolAttribute{
+				Description: "Do you want to prevent this user from signing in regardless of assigned group permissions?"
+				MarkdownDescription: "Do you want to prevent this user from signing in regardless of assigned group permissions?"
 				Optional: true,
 				Computed: true,
 				Default:  booldefault.StaticBool(false),
