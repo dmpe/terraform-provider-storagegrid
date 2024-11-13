@@ -42,10 +42,6 @@ type groupsDataSourceModel struct {
 	Data []*groupsDataSourceDataModel `tfsdk:"data"`
 }
 
-type groupsDataSourceSingleModel struct {
-	Data *groupsDataSourceDataModel `tfsdk:"data"`
-}
-
 type groupsDataSourceDataModel struct {
 	ID                 types.String       `tfsdk:"id"`
 	AccountID          types.String       `tfsdk:"account_id"`
@@ -197,13 +193,6 @@ These are for creating new group (as part of resources)
 type GroupPostPolicies struct {
 	Management ManagementPolicy `json:"management"`
 	S3         S3PostPolicy     `json:"s3"`
-}
-
-type groupsPostResourceModel struct {
-	DisplayName        types.String       `tfsdk:"display_name"`
-	UniqueName         types.String       `tfsdk:"unique_name"`
-	ManagementReadOnly types.Bool         `tfsdk:"management_read_only"`
-	Policies           *policiesDataModel `tfsdk:"policies"`
 }
 
 type S3PostPolicy struct {

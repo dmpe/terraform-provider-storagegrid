@@ -163,7 +163,7 @@ func (p *storagegridProvider) Configure(ctx context.Context, req provider.Config
 		data.EnableTraceContext = types.BoolValue(true)
 	}
 
-	if insecure == true {
+	if insecure {
 		data.Insecure = types.BoolValue(true)
 	}
 
