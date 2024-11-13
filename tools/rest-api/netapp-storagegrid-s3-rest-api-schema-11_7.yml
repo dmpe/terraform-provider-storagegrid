@@ -1,0 +1,4015 @@
+---
+swagger: '2.0'
+info:
+  title: StorageGRID Management API v3
+  description: 'REST API for managing StorageGRID deployments. Copyright (c) 2023
+    NetApp, Inc. All Rights Reserved'
+  version: '3.4'
+schemes:
+- https
+basePath: "/api/v3"
+produces:
+- application/json
+securityDefinitions:
+  BearerToken:
+    type: apiKey
+    name: Authorization
+    in: header
+security:
+- BearerToken: []
+tags:
+- name: endpoints
+  description: Operations on endpoints
+- name: deactivated-features
+  description: Operations on deactivated features
+- name: regions
+  description: Operations on regions
+- name: s3-object-lock
+  description: Operations on global S3 Object Lock settings, used to support regulatory
+    compliance.
+- name: grid-federation-connections
+  description: Operations on the grid federation connections and cross-grid replication
+- name: groups
+  description: Operations on groups
+- name: containers
+  description: Operations on S3 buckets or Swift containers
+- name: auth
+  description: Operations on authorization
+- name: config
+  description: Operations on version or session information
+- name: users
+  description: Operations on users
+- name: s3
+  description: Operations on S3 access keys
+- name: account
+  description: Operations on the current Storage Tenant Account
+- name: identity-source
+  description: Operations on identity sources
+paths:
+  "/org/endpoints":
+    get:
+      tags:
+      - endpoints
+      summary: Gets the list of endpoints
+      parameters:
+      - name: limit
+        description: maximum number of results
+        in: query
+        type: integer
+        default: 25
+        maximum: 500
+      - name: marker
+        description: marker-style pagination offset (value is Endpoint's URN)
+        in: query
+        type: string
+      - name: includeMarker
+        description: if set, the marker element is also returned
+        in: query
+        type: boolean
+      - name: order
+        description: pagination order (desc requires marker)
+        in: query
+        type: string
+        enum:
+        - asc
+        - desc
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/endpoint-get-all-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    post:
+      tags:
+      - endpoints
+      summary: Creates a new endpoint
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/endpoint-no-id"
+      - name: test
+        description: 'If specified, tests the validity of the endpoint, but does not
+          save the endpoint.
+
+          '
+        in: query
+        type: boolean
+      - name: forceSave
+        description: save the endpoint without testing its validity
+        in: query
+        type: boolean
+      responses:
+        201:
+          description: successfully created
+          schema:
+            "$ref": "#/definitions/endpoint-get-post-put-response"
+        204:
+          description: endpoint validation test succeeded
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/endpoints/{id}":
+    get:
+      tags:
+      - endpoints
+      summary: Retrieves a single endpoint
+      parameters:
+      - name: id
+        in: path
+        description: Endpoint ID
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/endpoint-get-post-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    delete:
+      tags:
+      - endpoints
+      summary: Deletes a single endpoint
+      parameters:
+      - name: id
+        in: path
+        description: Endpoint ID
+        required: true
+        type: string
+      responses:
+        204:
+          description: successfully deleted
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - endpoints
+      summary: Replaces a single endpoint
+      parameters:
+      - name: id
+        in: path
+        description: Endpoint ID
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/endpoint"
+      - name: test
+        description: 'If specified, tests the validity of the endpoint, but does not
+          modify the stored endpoint.
+
+          '
+        in: query
+        type: boolean
+      - name: forceSave
+        description: update the endpoint without testing its validity
+        in: query
+        type: boolean
+      responses:
+        200:
+          description: successfully changed
+          schema:
+            "$ref": "#/definitions/endpoint-get-post-put-response"
+        204:
+          description: endpoint validation test succeeded
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/deactivated-features":
+    get:
+      tags:
+      - deactivated-features
+      summary: Retrieves the currently deactivated features
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/deactivated-features-get-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/regions":
+    get:
+      tags:
+      - regions
+      summary: Lists configured regions
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/regions-get-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/compliance-global":
+    get:
+      tags:
+      - s3-object-lock
+      summary: Retrieves the global S3 Object Lock settings
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/compliance-global-get-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/grid-federation-connections":
+    get:
+      tags:
+      - grid-federation-connections
+      summary: Lists the grid federation connections for the current tenant account
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/grid-federation-connections-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/grid-federation-connections/{id}/reset-cross-grid-replication-error":
+    post:
+      tags:
+      - grid-federation-connections
+      summary: Clear the last cross-grid-replication error for the current tenant
+        account and a specific grid federation connection.
+      parameters:
+      - name: id
+        in: path
+        description: Grid federation connection ID
+        required: true
+        type: string
+        format: uuid
+      responses:
+        204:
+          description: Successfully cleared the last cross-grid-replication error
+            for the current tenant account and a specific grid federation connection.
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/groups":
+    get:
+      tags:
+      - groups
+      summary: Lists Tenant User Groups
+      parameters:
+      - name: type
+        description: filter by group type
+        in: query
+        type: string
+        enum:
+        - local
+        - federated
+      - name: limit
+        description: maximum number of results
+        in: query
+        type: integer
+        default: 25
+        maximum: 500
+      - name: marker
+        description: marker-style pagination offset (value is Group's URN)
+        in: query
+        type: string
+      - name: includeMarker
+        description: if set, the marker element is also returned
+        in: query
+        type: boolean
+      - name: order
+        description: pagination order (desc requires marker)
+        in: query
+        type: string
+        enum:
+        - asc
+        - desc
+      - name: includeCloneStatus
+        description: if set, the clone status is also returned
+        in: query
+        type: boolean
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/list-groups-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    post:
+      tags:
+      - groups
+      summary: Creates a new Tenant User Group
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/post-group-request"
+      responses:
+        201:
+          description: Successfully created. If the tenant account for this group
+            has permission to use the grid federation connection, the response might
+            include alerts if the same group could not be created on the other grids
+            in the connection.
+          schema:
+            "$ref": "#/definitions/post-group-response"
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/groups/group/{shortName}":
+    get:
+      tags:
+      - groups
+      summary: Retrieves a local Tenant User Group by unique name
+      parameters:
+      - name: shortName
+        in: path
+        description: uniqueName minus prefix
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-put-group-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/groups/federated-group/{shortName}":
+    get:
+      tags:
+      - groups
+      summary: Retrieves a federated Tenant User Group by unique name
+      parameters:
+      - name: shortName
+        in: path
+        description: uniqueName minus prefix
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-put-group-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/groups/group-clone-status/{shortName}":
+    get:
+      tags:
+      - groups
+      summary: Retrieves a Tenant User Group clone status by unique name
+      parameters:
+      - name: shortName
+        in: path
+        description: uniqueName minus prefix
+        required: true
+        type: string
+      responses:
+        200:
+          description: successfully retrieved
+          schema:
+            "$ref": "#/definitions/get-put-group-clone-status-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/groups/federated-group-clone-status/{shortName}":
+    get:
+      tags:
+      - groups
+      summary: Retrieves a federated Tenant User Group clone status by unique name
+      parameters:
+      - name: shortName
+        in: path
+        description: uniqueName minus prefix
+        required: true
+        type: string
+      responses:
+        200:
+          description: successfully retrieved
+          schema:
+            "$ref": "#/definitions/get-put-group-clone-status-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/groups/{id}":
+    get:
+      tags:
+      - groups
+      summary: Retrieves a single Tenant User Group by UUID
+      parameters:
+      - name: id
+        in: path
+        description: Group ID
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-put-group-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    delete:
+      tags:
+      - groups
+      summary: Deletes a single Tenant User Group
+      parameters:
+      - name: id
+        in: path
+        description: Group ID
+        required: true
+        type: string
+      responses:
+        204:
+          description: successfully deleted
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - groups
+      summary: Replaces a single Tenant User Group
+      parameters:
+      - name: id
+        in: path
+        description: Group ID
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          "$ref": "#/definitions/group"
+      responses:
+        200:
+          description: successfully replaced
+          schema:
+            "$ref": "#/definitions/get-put-group-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/groups/{id}/replicate":
+    post:
+      tags:
+      - groups
+      summary: Clone the tenant group to the other grids.
+      parameters:
+      - name: id
+        in: path
+        description: Group ID
+        required: true
+        type: string
+      responses:
+        204:
+          description: successfully cloned to the other grids
+        404:
+          description: group or tenant does not exist
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/groups/group-clone-status-by-id/{id}":
+    get:
+      tags:
+      - groups
+      summary: Retrieves a Grid Administrator Group clone status by UUID
+      parameters:
+      - name: id
+        in: path
+        description: Group ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: successfully retrieved
+          schema:
+            "$ref": "#/definitions/get-put-group-clone-status-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers":
+    get:
+      tags:
+      - containers
+      summary: Lists the S3 buckets or Swift containers for a tenant account
+      parameters:
+      - name: include
+        description: include optional information (S3 only)
+        in: query
+        type: array
+        items:
+          type: string
+          enum:
+          - compliance
+          - region
+          - s3ObjectLock
+          - deleteObjects
+          - crossGridReplication
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-list-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    post:
+      tags:
+      - containers
+      summary: Create a bucket for an S3 tenant account
+      parameters:
+      - name: body
+        in: body
+        description: Parameters for creating an S3 bucket
+        required: true
+        schema:
+          "$ref": "#/definitions/container-create"
+      responses:
+        201:
+          description: successfully created
+          schema:
+            "$ref": "#/definitions/container-create-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}":
+    delete:
+      tags:
+      - containers
+      summary: Deletes an empty bucket for an S3 tenant account
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        204:
+          description: successfully deleted
+        403:
+          description: user not authorized
+          schema:
+            "$ref": "#/definitions/error-response"
+        404:
+          description: bucket not found
+          schema:
+            "$ref": "#/definitions/error-response"
+        409:
+          description: bucket not empty
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}/compliance":
+    get:
+      tags:
+      - containers
+      summary: Gets the legacy Compliance settings for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-legacy-compliance-settings-get-put-response"
+        404:
+          description: bucket not found or is not compliant
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - containers
+      summary: Sets the legacy Compliance settings for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      - name: force
+        description: if set, the Strong-site consistency level is used (if not set,
+          the Strong-global consistency level is used); only use when directed by
+          technical support
+        in: query
+        type: boolean
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-legacy-compliance-settings"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-legacy-compliance-settings-get-put-response"
+        404:
+          description: bucket not found or is not compliant
+          schema:
+            "$ref": "#/definitions/error-response"
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        503:
+          description: unable to achieve the requested consistency level
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{containerName}/consistency":
+    get:
+      tags:
+      - containers
+      summary: Gets the consistency level for an S3 bucket or Swift container
+      parameters:
+      - name: containerName
+        in: path
+        description: S3 bucket or Swift container name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-consistency-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - containers
+      summary: Sets the consistency level for an S3 bucket or Swift container
+      parameters:
+      - name: containerName
+        in: path
+        description: S3 bucket or Swift container name
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-consistency"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-consistency-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}/cors":
+    get:
+      tags:
+      - containers
+      summary: Gets the Cross-Origin Resource Sharing (CORS) configuration for an
+        S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-cors-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - containers
+      summary: Sets the Cross-Origin Resource Sharing (CORS) configuration for an
+        S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-cors-configuration"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-cors-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}/cross-grid-replication":
+    get:
+      tags:
+      - containers
+      summary: Gets the cross-grid replication configuration for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-cross-grid-replication-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - containers
+      summary: Sets the cross-grid replication configuration for an empty S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-cross-grid-replication-configuration"
+      - name: test
+        description: If specified, tests the validity of the configuration, but does
+          not modify the stored configuration.
+        in: query
+        type: boolean
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-cross-grid-replication-configuration-get-put-response"
+        204:
+          description: configuration validation test succeeded
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}/delete-objects":
+    get:
+      tags:
+      - containers
+      summary: Retrieves the progress of the delete objects operation
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-empty-bucket-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    post:
+      tags:
+      - containers
+      summary: Starts and stops deleting objects in a bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-empty-bucket-request"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-empty-bucket-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}/last-access-time":
+    get:
+      tags:
+      - containers
+      summary: Determines if last access time is enabled for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-last-access-time-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - containers
+      summary: Enables or disables last access time updates for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-last-access-time"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-last-access-time-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}/metadata-notification":
+    get:
+      tags:
+      - containers
+      summary: Gets the metadata notification (search) configuration for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-metadata-notification-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - containers
+      summary: Sets the metadata notification (search) configuration for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-metadata-notification-configuration"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-metadata-notification-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}/notification":
+    get:
+      tags:
+      - containers
+      summary: Gets the notification configuration for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-notification-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - containers
+      summary: Sets the notification configuration for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-notification-configuration"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-notification-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}/replication":
+    get:
+      tags:
+      - containers
+      summary: Gets the replication configuration for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-replication-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - containers
+      summary: Sets the replication configuration for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-replication-configuration"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-replication-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}/object-lock":
+    get:
+      tags:
+      - containers
+      summary: Gets the S3 Object Lock setting for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-s3-object-lock-settings-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - containers
+      summary: Changes the S3 Object Lock setting for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-s3-object-lock-settings"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-s3-object-lock-settings-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/containers/{bucketName}/versioning":
+    get:
+      tags:
+      - containers
+      summary: Gets the versioning configuration for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-versioning-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - containers
+      summary: Sets the versioning configuration for an S3 bucket
+      parameters:
+      - name: bucketName
+        in: path
+        description: S3 bucket name
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/container-versioning-configuration"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/container-versioning-configuration-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/authorize":
+    post:
+      tags:
+      - auth
+      summary: Get authorization token
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/credentials"
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/authorize-response"
+          headers:
+            Cache-Control:
+              description: Indicates the time in seconds until the token expires
+              type: string
+              example: private, no-cache, max-age=57599
+            Expires:
+              description: Indicates the token expiration time in RFC2616 format
+              type: string
+              example: Thu, 19 Nov 2015 08:40:58 GMT
+        400:
+          description: Single sign-on is enabled and must be used to log in.
+          schema:
+            "$ref": "#/definitions/error-response"
+        401:
+          description: Credentials invalid.
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    delete:
+      tags:
+      - auth
+      summary: Delete authorization token
+      responses:
+        200:
+          description: If SSO is enabled, Single logout (SLO) returns the URL of a
+            SAML request. Issuing a GET request to this URL completes the logout and
+            deletes the authorization token.
+          schema:
+            "$ref": "#/definitions/authorize-response-delete"
+        204:
+          description: successfully deleted
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/authorize-saml":
+    post:
+      tags:
+      - auth
+      summary: Get the authentication request URI for the SAML identity provider
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/authorize-saml"
+      responses:
+        204:
+          description: request successfully received
+        400:
+          description: Single sign-on is not enabled.
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/saml-response":
+    post:
+      tags:
+      - auth
+      summary: SAML identity provider authentication response
+      parameters:
+      - name: SAMLResponse
+        description: SAML identity provider logout response. Required if RelayState
+          is specified.
+        in: formData
+        required: false
+        type: string
+      - name: RelayState
+        description: StorageGRID tenant account ID. Required if SAMLResponse is specified.
+        in: formData
+        required: false
+        type: string
+      responses:
+        200:
+          description: If the requested content type is application/json and the authorization
+            is successful, the response body contains the authorization bearer token
+            (similar to the response when SSO is not enabled).
+          schema:
+            "$ref": "#/definitions/authorize-response"
+        302:
+          description: 'If the requested content type is text/html and the authorization
+            is successful, the response is a 302 redirect. The redirect Location depends
+            on the RelayState parameter, as follows: If no RelayState was provided,
+            redirect to the StorageGRID account selection page. If the RelayState
+            is 0, redirect to the Grid Manager. Otherwise, redirect to the Tenant
+            Manager.'
+        400:
+          description: Single sign-on is not enabled.
+          schema:
+            "$ref": "#/definitions/error-response"
+        401:
+          description: Credentials invalid.
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/config":
+    get:
+      tags:
+      - config
+      summary: Retrieves global configuration and token information
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/config-get-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/config/product-version":
+    get:
+      tags:
+      - config
+      summary: Retrieves the product release version
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/product-version-get-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/versions":
+    get:
+      tags:
+      - config
+      summary: 'Retrieves the major versions of the management API supported by the
+        product release
+
+        '
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/api-versions-get-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users":
+    get:
+      tags:
+      - users
+      summary: Lists Tenant Users
+      parameters:
+      - name: type
+        description: filter by user type
+        in: query
+        type: string
+        enum:
+        - local
+        - federated
+      - name: limit
+        description: maximum number of results
+        in: query
+        type: integer
+        default: 25
+        maximum: 500
+      - name: marker
+        description: marker-style pagination offset (value is User's URN)
+        in: query
+        type: string
+      - name: includeMarker
+        description: if set, the marker element is also returned
+        in: query
+        type: boolean
+      - name: order
+        description: pagination order (desc requires marker)
+        in: query
+        type: string
+        enum:
+        - asc
+        - desc
+      - name: includeCloneStatus
+        description: if set, the clone status is also returned
+        in: query
+        type: boolean
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/list-users-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    post:
+      tags:
+      - users
+      summary: Creates a new local Tenant User
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/post-user-request"
+      responses:
+        201:
+          description: Successfully created. If the tenant account for this user has
+            permission to use the grid federation connection, the response might include
+            alerts if the same user could not be created on the other grids in the
+            connection.
+          schema:
+            "$ref": "#/definitions/post-user-response"
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/current-user/change-password":
+    post:
+      tags:
+      - users
+      summary: Updates the current Tenant User's password
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/password-change-request"
+      responses:
+        204:
+          description: successfully updated
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/user/{shortName}":
+    get:
+      tags:
+      - users
+      summary: Retrieves a local Tenant User by unique name
+      parameters:
+      - name: shortName
+        in: path
+        description: uniqueName minus prefix
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-post-put-user-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/user/{shortName}/change-password":
+    post:
+      tags:
+      - users
+      summary: Updates a local Tenant User password by unique name
+      parameters:
+      - name: shortName
+        in: path
+        description: uniqueName minus prefix
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/password-change-request"
+      responses:
+        204:
+          description: successfully updated
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/federated-user/{shortName}":
+    get:
+      tags:
+      - users
+      summary: Retrieves a federated Tenant User by unique name
+      parameters:
+      - name: shortName
+        in: path
+        description: uniqueName minus prefix
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-post-put-user-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/user-clone-status/{shortName}":
+    get:
+      tags:
+      - users
+      summary: Retrieves a Tenant User clone status by unique name
+      parameters:
+      - name: shortName
+        in: path
+        description: uniqueName minus prefix
+        required: true
+        type: string
+      responses:
+        200:
+          description: successfully retrieved
+          schema:
+            "$ref": "#/definitions/get-put-user-clone-status-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/federated-user-clone-status/{shortName}":
+    get:
+      tags:
+      - users
+      summary: Retrieves a federated Tenant User clone status by unique name
+      parameters:
+      - name: shortName
+        in: path
+        description: uniqueName minus prefix
+        required: true
+        type: string
+      responses:
+        200:
+          description: successfully retrieved
+          schema:
+            "$ref": "#/definitions/get-put-user-clone-status-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/root":
+    get:
+      tags:
+      - users
+      summary: Retrieves the root Tenant User
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-post-put-user-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/root/change-password":
+    post:
+      tags:
+      - users
+      summary: Updates the root Tenant User password
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/password-change-request"
+      responses:
+        204:
+          description: successfully updated
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/{id}":
+    get:
+      tags:
+      - users
+      summary: Retrieves a single Tenant User
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-post-put-user-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    delete:
+      tags:
+      - users
+      summary: Deletes a single Tenant User
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        type: string
+      responses:
+        204:
+          description: successfully deleted
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - users
+      summary: Replaces a single Tenant User
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        type: string
+      - in: body
+        name: body
+        required: true
+        schema:
+          "$ref": "#/definitions/user"
+      responses:
+        200:
+          description: successfully replaced
+          schema:
+            "$ref": "#/definitions/get-post-put-user-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/{id}/change-password":
+    post:
+      tags:
+      - users
+      summary: Updates a local Tenant User password by UUID
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/password-change-request"
+      responses:
+        204:
+          description: successfully updated
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/{id}/replicate":
+    post:
+      tags:
+      - users
+      summary: Clone the tenant user to the other grids.
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        type: string
+      responses:
+        204:
+          description: successfully cloned to the other grids
+        404:
+          description: user or tenant does not exist
+          schema:
+            "$ref": "#/definitions/error-response"
+        422:
+          description: One or more groups for a local user does not exist on the other
+            grid
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/user-clone-status-by-id/{id}":
+    get:
+      tags:
+      - users
+      summary: Retrieves a Grid Administrator User clone status by UUID
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        type: string
+      responses:
+        200:
+          description: successfully retrieved
+          schema:
+            "$ref": "#/definitions/get-put-user-clone-status-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/current-user/s3-access-keys":
+    get:
+      tags:
+      - s3
+      summary: Lists S3 access keys for the current User
+      parameters:
+      - name: includeCloneStatus
+        description: if set, the clone status is also returned
+        in: query
+        type: boolean
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/list-access-keys-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    post:
+      tags:
+      - s3
+      summary: Creates a new S3 access key for the current User
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            expires:
+              "$ref": "#/definitions/s3-access-key-expires"
+      responses:
+        201:
+          description: successfully created
+          schema:
+            "$ref": "#/definitions/post-access-key-response"
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/current-user/s3-access-keys/{accessKey}":
+    get:
+      tags:
+      - s3
+      summary: Retrieves a single S3 access key for the current user
+      parameters:
+      - name: accessKey
+        in: path
+        description: Access key
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-access-key-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    delete:
+      tags:
+      - s3
+      summary: Deletes a single S3 access key for the current user
+      parameters:
+      - name: accessKey
+        in: path
+        description: Access key or S3 credential pair identifier
+        required: true
+        type: string
+      responses:
+        204:
+          description: successfully deleted
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/current-user/s3-access-keys/{accessKey}/key-clone-status":
+    get:
+      tags:
+      - s3
+      summary: Retrieves a single S3 access key clone status for the current user
+      parameters:
+      - name: accessKey
+        in: path
+        description: Access key
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-put-key-clone-status-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/{userId}/s3-access-keys":
+    get:
+      tags:
+      - s3
+      summary: Lists S3 access keys for a given user
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        type: string
+      - name: includeCloneStatus
+        description: if set, the clone status is also returned
+        in: query
+        type: boolean
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/list-access-keys-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    post:
+      tags:
+      - s3
+      summary: Creates a new S3 access key for a given user
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            expires:
+              "$ref": "#/definitions/s3-access-key-expires"
+      responses:
+        201:
+          description: successfully created
+          schema:
+            "$ref": "#/definitions/post-access-key-response"
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/current-user/replicate-s3-access-key":
+    post:
+      tags:
+      - s3
+      summary: Clone the current user's S3 key to the other grids.
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/s3-access-keys-replicate-request"
+      responses:
+        204:
+          description: successfully cloned to the other grids
+        404:
+          description: user or tenant does not exist
+          schema:
+            "$ref": "#/definitions/error-response"
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/{userId}/replicate-s3-access-key":
+    post:
+      tags:
+      - s3
+      summary: Clone an S3 key to the other grids.
+      parameters:
+      - name: userId
+        in: path
+        description: User ID associated with the S3 access key
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/s3-access-keys-replicate-request"
+      responses:
+        204:
+          description: successfully clone to the other grids
+        404:
+          description: user or tenant does not exist
+          schema:
+            "$ref": "#/definitions/error-response"
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/{userId}/s3-access-keys/{accessKey}":
+    get:
+      tags:
+      - s3
+      summary: Retrieves a single S3 access key for a given user
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        type: string
+      - name: accessKey
+        in: path
+        description: Access key
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-access-key-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    delete:
+      tags:
+      - s3
+      summary: Deletes a single S3 access key for a given user
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        type: string
+      - name: accessKey
+        in: path
+        description: Access key or S3 credential pair identifier
+        required: true
+        type: string
+      responses:
+        204:
+          description: successfully deleted
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/users/{userId}/s3-access-keys/{accessKey}/key-clone-status":
+    get:
+      tags:
+      - s3
+      summary: Retrieves a single S3 access key clone status for a given user
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        type: string
+      - name: accessKey
+        in: path
+        description: Access key
+        required: true
+        type: string
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/get-put-key-clone-status-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/usage":
+    get:
+      tags:
+      - account
+      summary: Gets the storage usage information for the current Storage Tenant Account
+      parameters:
+      - name: strictConsistency
+        in: query
+        description: If true, the request fails if the results cannot be retrieved
+          at a strong-global consistency. If false (default), usage information is
+          retrieved at a consistency that prioritizes availability.
+        type: boolean
+      - name: includeBucketDetail
+        in: query
+        description: If true, also look up and return other details for the container
+          or bucket, including consistency. Default is false. Only consistency is
+          returned for Swift containers. Requires Manage All Buckets permission because
+          sensitive information is returned.
+        type: boolean
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/account-usage-response"
+        503:
+          description: unable to get usage at the desired consistency level
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/identity-source":
+    get:
+      tags:
+      - identity-source
+      summary: Lists Identity Sources
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/identity-source-get-put-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+    put:
+      tags:
+      - identity-source
+      summary: Set or update the Identity Source
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/identity-source-with-test-user"
+      - name: test
+        description: 'If specified, tests communication with the identity source,
+          but does not modify the stored configuration. Always succeeds if "disable"
+          is omitted or set to true.
+
+          '
+        in: query
+        type: boolean
+      responses:
+        200:
+          schema:
+            "$ref": "#/definitions/identity-source-get-put-response"
+        204:
+          description: communication test succeeded
+        422:
+          description: validation failure
+          schema:
+            "$ref": "#/definitions/error-response"
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+  "/org/identity-source/synchronize":
+    post:
+      tags:
+      - identity-source
+      summary: Requests that users and groups from the identity source be synchronized
+        as soon as possible
+      parameters:
+      - name: body
+        description: Ignored, leave blank
+        in: body
+        required: false
+        schema:
+          type: string
+      responses:
+        204:
+          description: request successfully received
+        default:
+          description: General error
+          schema:
+            "$ref": "#/definitions/error-response"
+definitions:
+  error-response:
+    title: Error Response
+    description: an error response format that augments the response with information
+      describing the error that occurred
+    type: object
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        code:
+          description: the HTTP response code
+          type: integer
+        message:
+          description: the localized error message
+          "$ref": "#/definitions/localized-error"
+        errors:
+          description: additional error messages such as per-field errors in a validation
+            failure
+          type: array
+          items:
+            "$ref": "#/definitions/localized-error"
+  localized-error:
+    required:
+    - text
+    properties:
+      text:
+        description: the localized text describing the error
+        type: string
+      key:
+        description: a unique key representing the message (for programmatic use)
+        type: string
+      context:
+        description: the situation or field where error was triggered
+        type: string
+      developerMessage:
+        description: additional information to aid in debugging
+        type: string
+  response:
+    title: Response
+    description: a response format that includes metadata characterizing the response's
+      generation and status
+    type: object
+    required:
+    - status
+    - apiVersion
+    properties:
+      responseTime:
+        description: the date and time when the response was generated
+        type: string
+        format: date-time
+      status:
+        description: the result of the request
+        type: string
+        enum:
+        - success
+        - error
+      apiVersion:
+        description: the major and minor version of the API
+        type: string
+        example: '3.4'
+      deprecated:
+        description: whether the requested API is deprecated, default false
+        type: boolean
+        default: false
+      data:
+        description: the response data for the request (required on success and optional
+          on error; type and content vary by request)
+  alert-metadata-response:
+    title: Metadata alerts
+    properties:
+      metadata:
+        type: object
+        required:
+        - alerts
+        properties:
+          alerts:
+            title: Metadata alerts
+            description: Messages reported during processing of the API request
+            type: array
+            items:
+              title: Alert message
+              type: object
+              required:
+              - severity
+              - text
+              - key
+              properties:
+                severity:
+                  description: severity of alert message
+                  type: string
+                  enum:
+                  - info
+                  - warning
+                  - error
+                text:
+                  description: description of the alert message
+                  type: string
+                key:
+                  description: key for localizing the alert message
+                  type: string
+  endpoint-no-id:
+    title: Endpoint
+    description: The URI and URN for the external resource.
+    type: object
+    required:
+    - displayName
+    - endpointURI
+    - endpointURN
+    properties:
+      displayName:
+        title: Display Name
+        description: the descriptive name that will be displayed for the endpoint;
+          does not need to be unique
+        type: string
+        maxLength: 32
+        example: My endpoint
+      endpointURI:
+        title: Endpoint URI
+        description: the Uniform Resource Locator (URL) of the external resource
+        type: string
+        maxLength: 255
+        example: https://s3-aws-region.amazonaws.com
+      endpointURN:
+        title: Endpoint URN
+        description: the Uniform Resource Name (URN) of the external resource; immutable
+          once the endpoint is created
+        type: string
+        maxLength: 255
+        example: arn:aws:s3:::my-bucket
+      authType:
+        title: Authentication Type
+        description: the authentication type to be used for the endpoint; if accessKey,
+          then credentials must be provided; if basicHttp, then basicHttpCredentials
+          must be provided; if cap, then capCredentials must be provided
+        type: string
+        enum:
+        - anonymous
+        - accessKey
+        - basicHttp
+        - cap
+      caCert:
+        title: CA Certificate
+        description: custom certificate used to connect to the endpoint
+        type: string
+        maxLength: 64000
+        example: "-----BEGIN CERTIFICATE----- abcdefghijkl123456780ABCDEFGHIJKL 123456/7890ABCDEFabcdefghijklABCD
+          -----END CERTIFICATE-----\n"
+      insecureTLS:
+        title: Insecure TLS flag
+        description: flag to permit insecure Transport Layer Security (TLS) for endpoint
+          connections
+        type: boolean
+        default: false
+      credentials:
+        title: Access Key Credentials
+        type: object
+        required:
+        - accessKeyId
+        - secretAccessKey
+        properties:
+          accessKeyId:
+            title: Access key ID
+            description: access key credential for this endpoint (used for access
+              key authentication); will be obfuscated in the response
+            type: string
+            maxLength: 255
+            example: ABCDEFabcd1234567890
+          secretAccessKey:
+            title: Secret access key
+            description: secret access key credential for this endpoint (used for
+              access key authentication); will be obfuscated in the response
+            type: string
+            maxLength: 255
+            example: abcABC+123456789012345678901234567890123
+      basicHttpCredentials:
+        title: Basic HTTP Credentials
+        type: object
+        required:
+        - username
+        - password
+        properties:
+          username:
+            title: Username
+            description: username credential for this endpoint (used for basic HTTP
+              authentication)
+            type: string
+            maxLength: 255
+          password:
+            title: Password
+            description: password credential for this endpoint (used for basic HTTP
+              authentication); will be obfuscated in the response
+            type: string
+            maxLength: 255
+      capCredentials:
+        "$ref": "#/definitions/cap-credentials"
+      error:
+        title: Error
+        description: the last error for the endpoint
+        type: object
+        required:
+        - text
+        - key
+        - time
+        properties:
+          text:
+            description: the localized description of the error
+            type: string
+            example: 'Endpoint could not be contacted: connection refused'
+          time:
+            description: ISO 8601 timestamp indicating the date and time at which
+              the error occurred
+            type: string
+            format: date-time
+          key:
+            description: an i18n key representing the error
+            type: string
+            enum:
+            - endpoints.authorization_error
+            - endpoints.aws_error
+            - endpoints.connection_error
+            - endpoints.other_error
+  endpoint:
+    allOf:
+    - "$ref": "#/definitions/endpoint-no-id"
+    - type: object
+      required:
+      - id
+      properties:
+        id:
+          title: Endpoint Identifier
+          description: a unique identifier for the endpoint; automatically assigned
+            when an endpoint is created
+          type: string
+          format: uuid
+          example: 00000000-0000-0000-0000-000000000000
+  endpoint-get-post-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/endpoint"
+      required:
+      - data
+  endpoint-get-all-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/definitions/endpoint"
+      required:
+      - data
+  cap-credentials:
+    title: CAP Credentials
+    description: the credentials for accessing a CAP server in order to acquire temporary
+      C2S credentials
+    type: object
+    required:
+    - url
+    - clientCert
+    - clientKey
+    properties:
+      url:
+        title: CAP URL
+        description: the complete URL for the CAP Credentials API, for use with GET
+          requests
+        type: string
+        example: https://123.45.67.89:1234/CAP/api/v1/credentials?agency=myagency&mission=mymission&role=myrole
+      serverCaCert:
+        title: CAP server CA certificate
+        description: one or more trusted CA certificates for verifying the CAP server
+          (in PEM encoding); if omitted, the operating system CA certificates will
+          be used
+        type: string
+        maxLength: 64000
+        example: |
+          -----BEGIN CERTIFICATE-----
+          abcdefghijkl123456780ABCDEFGHIJKL
+          123456/7890ABCDEFabcdefghijklABCD
+          -----END CERTIFICATE-----
+      clientCert:
+        title: Client certificate
+        description: client certificate for authentication to CAP server (in PEM encoding)
+        type: string
+        maxLength: 64000
+        example: |
+          -----BEGIN CERTIFICATE-----
+          abcdefghijkl123456780ABCDEFGHIJKL
+          123456/7890ABCDEFabcdefghijklABCD
+          -----END CERTIFICATE-----
+      clientKey:
+        title: Client private key
+        description: 'private key for the client certificate (in PEM encoding); if encrypted,
+          must use traditional format (cannot use PKCS #8 format)'
+        type: string
+        maxLength: 64000
+        example: |
+          -----BEGIN RSA PRIVATE KEY-----
+          Proc-Type: 4,ENCRYPTED
+          DEK-Info: AES-256-CBC,9B168D95CD35385474EA87D87A337BD4
+
+          abcdefghijkl123456780ABCDEFGHIJKL
+          123456/7890ABCDEFabcdefghijklABCD
+          -----END RSA PRIVATE KEY-----
+      clientKeyPassphrase:
+        title: Client private key passphrase
+        description: passphrase for decrypting the client private key; omit the passphrase
+          if the private key is not encrypted
+        type: string
+        maxLength: 256
+        example: mypassphrase
+  deactivated-features:
+    title: deactivated features
+    description: currently deactivated features
+    "$ref": "#/definitions/permissions-list-except-root"
+  deactivated-features-get-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - required:
+      - data
+    - properties:
+        data:
+          "$ref": "#/definitions/deactivated-features"
+  regions-get-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          type: array
+          description: the list of region names configured
+          items:
+            "$ref": "#/definitions/region-name"
+      required:
+      - data
+  region-name:
+    type: string
+    description: the name of a region, can only include letters, numbers, and hyphens
+    maxLength: 32
+    minLength: 2
+    pattern: "[-a-zA-Z0-9]+"
+    example: us-east-1
+  compliance-global:
+    title: Global S3 Object Lock Settings
+    type: object
+    required:
+    - complianceEnabled
+    properties:
+      complianceEnabled:
+        title: S3 Object Lock Enabled
+        description: indicates whether S3 Object Lock is enabled for the grid
+        type: boolean
+        example: false
+      legacyComplianceEnabled:
+        title: Global Compliance status
+        description: Whether the global Compliance setting was previously enabled.
+          Compliance is a legacy feature that was replaced by S3 Object Lock.
+        type: boolean
+        example: false
+      createLegacyComplianceBuckets:
+        title: Legacy Bucket Compliance
+        description: Whether S3 tenants can create new Compliant buckets. Compliance
+          is a legacy feature that was replaced by S3 Object Lock.
+        type: boolean
+        example: false
+  compliance-global-get-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/compliance-global"
+      required:
+      - data
+  policies:
+    title: Policies
+    description: Sets of permissions
+    type: object
+    properties:
+      management:
+        description: permissions related to the Tenant Management UI/API
+        "$ref": "#/definitions/policy-management"
+      s3:
+        description: permissions related to the S3 API (Tenant only)
+        "$ref": "#/definitions/policy-s3"
+      swift:
+        description: permissions related to the Swift API (Tenant only)
+        "$ref": "#/definitions/policy-swift"
+  policy-account:
+    title: Account Policy
+    description: settings for the tenant account
+    required:
+    - useAccountIdentitySource
+    - allowPlatformServices
+    properties:
+      useAccountIdentitySource:
+        title: Use Tenant Account Identity Source
+        description: whether the tenant account should configure its own identity
+          source. If false, the tenant uses the grid-wide identity source.
+        type: boolean
+        default: true
+      allowPlatformServices:
+        title: Allow Platform Services
+        description: whether a tenant can use platform services features such as CloudMirror.
+          These features send data to an external service that is specified using
+          a StorageGRID endpoint.
+        type: boolean
+        default: false
+        example: false
+      allowSelectObjectContent:
+        title: Allow S3 SelectObjectContent
+        description: whether a tenant can use the S3 SelectObjectContent API to filter
+          and retrieve object data.
+        type: boolean
+        default: false
+        example: false
+      quotaObjectBytes:
+        title: Object Quota (bytes)
+        description: the maximum number of bytes available for this tenant's objects.
+          Represents a logical amount (object size), not a physical amount (size on
+          disk). If null, an unlimited number of bytes is available.
+        type: integer
+        minimum: 1
+        example: 100000000000
+      allowedGridFederationConnections:
+        title: Allowed Grid Federation Connections
+        description: Connection IDs of tenants. When specified, cross-grid replication
+          of this account and the buckets in this account will be allowed.
+        type: array
+        items:
+          type: string
+          example: eb38438e-c05b-11ec-9297-549000ba143d
+  permissions-list-except-root:
+    type: object
+    properties:
+      manageAllContainers:
+        description: ability to manage all S3 buckets or Swift containers for this
+          tenant account (overrides permission settings in group or bucket policies)
+        type: boolean
+      manageEndpoints:
+        description: ability to manage all S3 endpoints for this tenant account
+        type: boolean
+      manageOwnS3Credentials:
+        description: ability to manage your personal S3 credentials
+        type: boolean
+      manageOwnContainerObjects:
+        description: ability to access the Experimental S3 Console
+        type: boolean
+  policy-management:
+    title: Management Policy
+    allOf:
+    - "$ref": "#/definitions/permissions-list-except-root"
+    - properties:
+        rootAccess:
+          description: full access to all tenant administration features
+          type: boolean
+  policy-s3:
+    title: S3 Policy
+    type: object
+    required:
+    - Statement
+    properties:
+      Id:
+        description: S3 Policy ID provided by policy generator tools (currently not
+          used)
+        type: string
+        example: '123456'
+      Version:
+        description: S3 API Version (currently not used)
+        type: string
+        example: '2015-09-08'
+      Statement:
+        description: a list of group policy statements
+        type: array
+        items:
+          "$ref": "#/definitions/policy-s3-statement"
+  policy-s3-statement:
+    title: S3 Group Policy Statement
+    type: object
+    properties:
+      Sid:
+        description: an optional identifier that you provide for the policy statement
+        type: string
+      Effect:
+        description: the specific result of the statement (either an allow or an explicit
+          deny)
+        type: string
+        required: true
+        enum:
+        - Allow
+        - Deny
+      Action:
+        description: the specific actions that will be allowed (Can be a string if
+          only one element. A statement must have either Action or NotAction.)
+        type: array
+        required: true
+        items:
+          type: string
+        example: s3:GetObject
+      NotAction:
+        description: the specific exceptional actions (Can be a string if only one
+          element. A statement must have either Action or NotAction.)
+        type: array
+        items:
+          type: string
+        example: s3:GetObject
+      Resource:
+        description: the objects that the statement covers (Can be a string if only
+          one element. A statement must have either Resource or NotResource.)
+        type: array
+        items:
+          type: string
+        example:
+        - arn:aws:s3:::mybucket/myobject
+      NotResource:
+        description: the objects that the statement does not cover (Can be a string
+          if only one element. A statement must have either Resource or NotResource.)
+        type: array
+        items:
+          type: string
+        example:
+        - arn:aws:s3:::mybucket/myobject
+      Condition:
+        description: the conditions that define when this policy statement will apply.
+          (A Condition element can contain multiple conditions. Each condition consists
+          of a Condition Type and a Condition Value.) See examples in the S3 Implementation
+          Guide.
+        type: object
+        properties:
+          condition_type:
+            title: Condition Type Element (consisting of a condition operator and
+              optional operator flag)
+            type: object
+            properties:
+              condition_key:
+                description: the condition type to match
+                type: string
+                example: condition_value
+  policy-swift:
+    title: Swift Policy
+    type: object
+    properties:
+      roles:
+        description: Swift roles to grant
+        type: array
+        items:
+          type: string
+          enum:
+          - admin
+  grid-federation-connections:
+    title: Grid federation connections
+    description: List of grid federation connection information
+    type: object
+    required:
+    - id
+    - displayName
+    - cgrError
+    properties:
+      id:
+        title: Connection ID
+        description: Grid federation connection ID.
+        type: string
+        example: f28bfefa-235b-41a9-b053-dfbfa53fa498
+      displayName:
+        title: Display name
+        description: The unique display name of the grid federation connection.
+        type: string
+        example: display name
+      cgrError:
+        title: Cross-Grid Replication Error
+        description: The last cross-grid-replication error for the current tenant
+          account and a specific grid federation connection.
+        type: object
+        required:
+        - text
+        - key
+        - time
+        properties:
+          text:
+            description: The localized description of the error
+            type: string
+            example: Cross-grid replication has encountered an error. Failed to send
+              cross-grid replication request
+          key:
+            description: An i18n key representing the error
+            type: string
+            enum:
+            - cross_grid_replication.permanent_request_failure
+            - cross_grid_replication.resource_unavailable_error
+          time:
+            description: ISO 8601 timestamp indicating the date and time at which
+              the error occurred
+            type: string
+            format: date-time
+  grid-federation-connections-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/definitions/grid-federation-connections"
+      required:
+      - data
+  post-group-request:
+    title: Group
+    description: An organizational unit for Users. Groups can be local or federated.
+    required:
+    - uniqueName
+    properties:
+      uniqueName:
+        title: Unique name
+        description: the machine-readable name for the Group (unique within an Account;
+          must begin with group/ or federated-group/)
+        type: string
+        example: federated-group/developers
+        maxLength: 1024
+      displayName:
+        title: Display name
+        description: the human-readable name for the Group (required for local Groups
+          and imported automatically for federated Groups)
+        type: string
+        example: Developers
+        maxLength: 32
+      managementReadOnly:
+        title: Management Read Only
+        description: Whether the group is read-only. Users can view settings and features
+          but cannot make changes or perform operations. Local users can change their
+          passwords.
+        type: boolean
+        example: false
+      policies:
+        description: Permissions for this Group
+        "$ref": "#/definitions/policies"
+  group:
+    title: Group
+    description: An organizational unit for Users. Groups can be local or federated.
+    allOf:
+    - "$ref": "#/definitions/post-group-request"
+    - required:
+      - accountId
+      - id
+      - federated
+      - groupURN
+    - properties:
+        accountId:
+          title: Account Identifier
+          description: Storage Tenant Account ID
+          type: string
+          example: '12345678901234567890'
+        id:
+          title: Id
+          description: UUID for the Group (generated automatically)
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        federated:
+          title: Federated
+          description: true if the Group is federated, for example, an LDAP Group
+          type: boolean
+        groupURN:
+          title: Group Uniform Resource Name
+          description: contains the Group uniqueName and Account ID (generated automatically)
+          type: string
+          example: urn:sgws:identity::12345678901234567890:federated-group/developers
+  group-with-clone-status:
+    title: Group
+    description: An organizational unit for Users. Groups can be local or federated.
+    allOf:
+    - "$ref": "#/definitions/group"
+    - required:
+      - accountId
+      - id
+      - federated
+      - groupURN
+    - properties:
+        cloneStatus:
+          title: Grid Federation Clone Status
+          description: clone status for connections used in grid federation
+          type: object
+          example:
+            b1e721a5-1d23-4ee8-82ce-2b529c592961:
+              succeeded: true
+              time: '2022-01-01T01:00:00.000Z'
+              error: 
+            9c1567c2-1e69-4d94-b47b-f4bcdd470377:
+              succeeded: false
+              time: '2022-01-01T01:00:00.000Z'
+              error: Failed to clone group to the other grid
+  list-groups-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/definitions/group-with-clone-status"
+      required:
+      - data
+  get-put-group-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/group"
+      required:
+      - data
+  post-group-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - "$ref": "#/definitions/alert-metadata-response"
+    - properties:
+        data:
+          "$ref": "#/definitions/group"
+        metadata:
+          properties:
+            alerts:
+              title: Metadata alerts related to group clone
+              description: Messages reported when cloning a group to the tenant's
+                destination grid using a grid federation connection
+              items:
+                title: Alert message for a group clone failure
+                properties:
+                  severity:
+                    example: warning
+                  text:
+                    example: Reason the group could not be cloned to the other grid.
+                  key:
+                    example: grid_federation_connection.errors.remote_delete_failure
+      required:
+      - data
+  get-put-group-clone-status-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          type: object
+          description: A map of grid federation connection IDs to clone status and
+            error.
+          example:
+            b1e721a5-1d23-4ee8-82ce-2b529c592961:
+              succeeded: true
+              time: '2022-01-01T01:00:00.000Z'
+              error: 
+            9c1567c2-1e69-4d94-b47b-f4bcdd470377:
+              succeeded: false
+              time: '2022-01-01T01:00:00.000Z'
+              error: Failed to clone group to the other grid
+      required:
+      - data
+  container:
+    description: An S3 bucket or Swift container
+    properties:
+      name:
+        description: S3 bucket or Swift container name
+        type: string
+        minLength: 3
+        maxLength: 63
+        example: my-container
+      creationTime:
+        description: time the bucket or container was created
+        type: string
+        format: date-time
+      region:
+        description: the region of this bucket (returned only if requested using the
+          S3 include parameter)
+        type: string
+        example: us-east-1
+        default: us-east-1
+      compliance:
+        description: settings for legacy Compliance (returned only if requested using
+          the S3 include parameter)
+        "$ref": "#/definitions/container-legacy-compliance-settings"
+      s3ObjectLock:
+        description: settings for S3 Object Lock (returned only if requested using
+          the S3 include parameter)
+        "$ref": "#/definitions/container-s3-object-lock-settings"
+      deleteObjectStatus:
+        description: returns status of bucket object deletion operation
+        "$ref": "#/definitions/container-empty-settings"
+      crossGridReplication:
+        description: configuration for cross-grid replication (returned only if requested
+          using the S3 include parameter)
+        "$ref": "#/definitions/container-cross-grid-replication-configuration"
+    required:
+    - name
+    - creationTime
+  container-legacy-compliance-settings:
+    description: Settings for legacy Compliance. Cannot be used with S3 Object Lock.
+    required:
+    - autoDelete
+    - legalHold
+    - retentionPeriodMinutes
+    properties:
+      autoDelete:
+        description: for a legacy Compliant bucket, whether the objects in this bucket
+          will be deleted automatically when their retention period expires, unless
+          the bucket is under a legal hold
+        type: boolean
+        example: false
+      legalHold:
+        description: for a legacy Compliant bucket, whether the bucket is currently
+          under a legal hold (objects cannot be deleted)
+        type: boolean
+        example: false
+      retentionPeriodMinutes:
+        description: for a legacy Compliant bucket, the length of the retention period
+          for objects added to this bucket, in minutes, starting when the object is
+          ingested into the grid
+        type: integer
+        example: 2629800
+        minValue: 1
+  container-legacy-compliance-settings-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-legacy-compliance-settings"
+      required:
+      - data
+  container-consistency:
+    description: S3 bucket or Swift container consistency setting
+    properties:
+      consistency:
+        description: The consistency control affects the availability of objects for
+          client requests.
+        type: string
+        enum:
+        - all
+        - strong-global
+        - strong-site
+        - read-after-new-write
+        - available
+        example: available
+    required:
+    - consistency
+  container-consistency-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-consistency"
+      required:
+      - data
+  container-cors-configuration:
+    description: Configure CORS
+    properties:
+      cors:
+        description: XML for configuring CORS, or null to disable CORS
+        type: string
+        example: |
+          <CORSConfiguration>
+            <CORSRule>
+              <AllowedOrigin>http://www.example.com</AllowedOrigin>
+              <AllowedMethod>GET</AllowedMethod>
+            </CORSRule>
+          </CORSConfiguration>
+  container-cors-configuration-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-cors-configuration"
+      required:
+      - data
+  container-cross-grid-replication-configuration:
+    title: Cross-grid replication configuration
+    description: Parameters for cross-grid replication configuration.
+    properties:
+      rules:
+        title: Rules
+        description: A list of cross-grid replication rules. Omit this parameter or
+          set it to empty list to disable cross-grid replication.
+        type: array
+        maxItems: 1
+        default: []
+        items:
+          title: Rule
+          description: Specifies which objects to replicate and where to store the
+            replicas.
+          type: object
+          required:
+          - id
+          - enabled
+          - deleteMarkerReplication
+          - destination
+          properties:
+            id:
+              title: Rule Identifier
+              description: A unique identifier for the rule.
+              type: string
+              example: rule1
+              maxLength: 255
+            enabled:
+              title: Enabled
+              description: True if the rule is enabled.
+              type: boolean
+              example: true
+            deleteMarkerReplication:
+              title: Delete Marker Replication
+              description: Whether delete markers created by S3 client operations
+                will be replicated. This setting does not apply to delete markers
+                created by lifecycle rules or ILM, which are never replicated across
+                grids.
+              type: boolean
+              example: true
+            destination:
+              title: Destination
+              description: Contains information about the cross-grid replication destination
+                and its configurations.
+              type: object
+              required:
+              - connectionId
+              - bucket
+              - accountId
+              properties:
+                connectionId:
+                  title: Connection ID
+                  description: A grid federation connection UUID.
+                  type: string
+                  format: uuid
+                  minLength: 36
+                  maxLength: 36
+                bucket:
+                  title: Bucket Name
+                  description: The destination S3 bucket name.
+                  type: string
+                  example: remote-bucket
+                accountId:
+                  title: Account ID
+                  description: The destination S3 bucket owner account ID.
+                  type: string
+                  maxLength: 64
+                  example: '12345678901234567890'
+  container-cross-grid-replication-configuration-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-cross-grid-replication-configuration"
+      required:
+      - data
+  container-empty-bucket-configuration-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - "$ref": "#/definitions/alert-metadata-response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-empty-bucket-response"
+        metadata:
+          properties:
+            alerts:
+              title: Metadata alerts
+              description: Messages reported during an operation to delete all objects
+                in a bucket
+              items:
+                properties:
+                  severity:
+                    example: warning
+                  text:
+                    example: Reason all objects could not be deleted from a bucket.
+                  key:
+                    example: containers.empty_bucket_ldr_partial_failure
+    - required:
+      - data
+  container-create:
+    description: Create S3 bucket
+    required:
+    - name
+    properties:
+      name:
+        description: Bucket name. Must be unique across the grid and DNS compliant.
+          See the instructions for using S3 for details.
+        type: string
+        example: bucket-1
+        minLength: 3
+        maxLength: 63
+      region:
+        description: the region for this bucket, which must already be defined (defaults
+          to us-east-1 if not specified)
+        type: string
+        example: us-east-1
+        default: us-east-1
+      s3ObjectLock:
+        "$ref": "#/definitions/container-s3-object-lock-settings"
+  container-empty-bucket-request:
+    description: Enables or disables empty bucket operation
+    required:
+    - deleteObjects
+    properties:
+      deleteObjects:
+        description: Enables or disables an operation to delete all bucket objects
+        type: boolean
+        example: true
+  container-empty-bucket-response:
+    description: Enables or disables empty bucket operation
+    required:
+    - isDeletingObjects
+    properties:
+      isDeletingObjects:
+        description: Enables or disables an operation to delete all bucket objects
+        type: boolean
+        example: true
+  container-create-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - "$ref": "#/definitions/alert-metadata-response"
+    - properties:
+        data:
+          "$ref": "#definitions/container-create"
+        metadata:
+          description: Metadata for the response, which includes warnings and more.
+          properties:
+            alerts:
+              title: Metadata alerts related to bucket creation.
+              description: Messages reported during bucket creation, such as bucket
+                properties not being set as requested.
+              items:
+                properties:
+                  severity:
+                    example: warning
+                  text:
+                    example: The bucket was created but the configuration of default
+                      retention failed. Edit the bucket to set the default retention.
+                  key:
+                    example: containers.container_create_object_lock_error
+      required:
+      - data
+  container-last-access-time:
+    description: Last access time
+    properties:
+      lastAccessTime:
+        description: Last access time value
+        type: string
+        enum:
+        - disabled
+        - enabled
+        example: disabled
+    required:
+    - lastAccessTime
+  container-last-access-time-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-last-access-time"
+      required:
+      - data
+  container-list-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/definitions/container"
+      required:
+      - data
+  container-metadata-notification-configuration:
+    description: Configure metadata notifications (search)
+    properties:
+      metadataNotification:
+        description: XML for configuring metadata notifications (search), or null
+          to disable metadata notifications (search)
+        type: string
+        example: |
+          <MetadataNotificationConfiguration>
+            <Rule>
+                <ID>Rule-1</ID>
+                <Status>Enabled</Status>
+                <Prefix></Prefix>
+                <Destination>
+                   <Urn>arn:aws:es:us-east-1:3333333:domain-name</Urn>
+                </Destination>
+            </Rule>
+          </MetadataNotificationConfiguration>
+  container-metadata-notification-configuration-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-metadata-notification-configuration"
+      required:
+      - data
+  container-notification-configuration:
+    description: Notification configuration
+    properties:
+      notification:
+        description: notification configuration XML, or null to disable notifications
+        type: string
+        example: |
+          <?xml version="1.0" encoding="UTF-8"?>
+          <NotificationConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <TopicConfiguration>
+              <Id>MyEventForPut</Id>
+              <Topic>arn:aws:sns:us-east-1:050340950352:my-topic</Topic>
+              <Event>s3:ObjectCreated:Put</Event>
+              <Filter>
+                <S3Key>
+                  <FilterRule>
+                    <Name>prefix</Name>
+                    <Value>images/</Value>
+                  </FilterRule>
+                  <FilterRule>
+                    <Name>suffix</Name>
+                    <Value>.jpg</Value>
+                  </FilterRule>
+                </S3Key>
+              </Filter>
+            </TopicConfiguration>
+          </NotificationConfiguration>
+  container-notification-configuration-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-notification-configuration"
+      required:
+      - data
+  container-replication-configuration:
+    description: Replication configuration
+    properties:
+      replication:
+        description: replication configuration XML, or null to disable replications
+        type: string
+        example: |
+          <?xml version="1.0" encoding="UTF-8"?>
+          <ReplicationConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Rule>
+              <ID>rule1</ID>
+              <Status>Enabled</Status>
+              <Prefix></Prefix>
+              <Destination>
+                <Bucket>arn:aws:s3:::mybucket-replicated</Bucket>
+                <StorageClass>STANDARD</StorageClass>
+              </Destination>
+              <Role>arn:aws:iam::35667example:role/CrossRegionReplicationRoleForS3</Role>
+            </Rule>
+          </ReplicationConfiguration>
+  container-replication-configuration-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-replication-configuration"
+      required:
+      - data
+  container-versioning-configuration:
+    description: Versioning configuration value. versioningEnabled and versioningSuspended
+      are mutually exclusive. If versioningEnabled and versioningSuspended are both
+      false, versioning has never been enabled or suspended on the bucket.
+    properties:
+      versioningEnabled:
+        description: versioningEnabled is true if bucket versioning is currently enabled.
+          It is false if versioning is suspended or if versioning was never enabled.
+        type: boolean
+      versioningSuspended:
+        description: versioningSuspended is true if bucket versioning is currently
+          suspended. It is false if versioning is not suspended or if versioning was
+          never enabled.
+        type: boolean
+  container-s3-object-lock-settings:
+    description: Settings for S3 Object Lock. Cannot be used with legacy Compliance.
+    required:
+    - enabled
+    properties:
+      enabled:
+        description: whether the bucket has S3 Object Lock enabled
+        type: boolean
+        example: false
+      defaultRetentionSetting:
+        "$ref": "#/definitions/container-s3-object-lock-default-retention-settings"
+  container-empty-settings:
+    description: status of operation to delete all bucket objects.
+    properties:
+      isDeletingObjects:
+        description: whether all objects are being deleted from the bucket.
+        type: boolean
+        example: false
+      initialObjectCount:
+        description: number of objects in the bucket when the operation to delete
+          all objects was started
+        type: string
+        example: '0'
+      initialObjectBytes:
+        description: number of object bytes in the bucket when the operation to delete
+          all objects was started
+        type: string
+        example: '0'
+  container-s3-object-lock-settings-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-s3-object-lock-settings"
+      required:
+      - data
+  container-s3-object-lock-default-retention-settings:
+    description: Default retention settings for S3 Object Lock.
+    required:
+    - mode
+    properties:
+      mode:
+        description: The retention mode used for new objects added to this bucket.
+          Must be compliance, which means that an object version cannot be overwritten
+          or deleted by any user.
+        type: string
+        example: compliance
+      days:
+        description: The length of the default retention period for new objects added
+          to this bucket, in days. If provided, must be paired with retentionMode.
+          Does not affect existing bucket objects or objects with their own retain-until-date
+          settings.
+        type: integer
+        example: 365
+      years:
+        description: The length of the default retention period for new objects added
+          to this bucket, in years. If provided, must be paired with retentionMode.
+          Does not affect existing bucket objects or objects with their own retain-until-date
+          settings.
+        type: integer
+        example: 1
+  container-versioning-configuration-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/container-versioning-configuration"
+      required:
+      - data
+  authorize-saml:
+    title: Authorize SAML
+    description: SAML authorization request
+    type: object
+    properties:
+      accountId:
+        title: StorageGRID Tenant Account ID
+        description: a unique identifier for the StorageGRID tenant account
+        type: string
+        example: '45844190160300656164'
+  credentials:
+    title: Credentials
+    description: authentication credentials
+    type: object
+    required:
+    - accountId
+    - username
+    - password
+    properties:
+      accountId:
+        type: string
+        example: '12345678901234567000'
+      username:
+        type: string
+        example: MyUserName
+      password:
+        type: string
+        example: MyPassword
+      cookie:
+        description: flag to ask for an authorization token in the response using
+          the Set-Cookie header
+        type: boolean
+      csrfToken:
+        description: flag to ask for a CSRF token in the response using the Set-Cookie
+          header. See the Administrator Guide for more information
+        type: boolean
+        default: false
+  authorize-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          description: authorization bearer token
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+      required:
+      - data
+  authorize-response-delete:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          description: The SAML logout request URL. Issuing a GET request to this
+            URL completes the logout and deletes the authorization token.
+          type: string
+          example: https://my.domain.com/logout
+      required:
+      - data
+  api-versions-get-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - required:
+      - data
+      properties:
+        data:
+          type: array
+          description: major API versions supported
+          items:
+            type: integer
+            example: 2
+  config:
+    required:
+    - auto-logout
+    - user
+    - token
+    - permissions
+    - account
+    - restrictedPort
+    properties:
+      auto-logout:
+        title: GUI Inactivity Timeout
+        description: the timeout period for the browser session in seconds (zero for
+          disabled)
+        type: integer
+        example: 900
+      user:
+        description: information about the current User
+        "$ref": "#/definitions/config-user"
+      token:
+        description: information about the current token
+        "$ref": "#/definitions/config-token"
+      permissions:
+        description: the management permissions of the current token
+        "$ref": "#/definitions/policy-management"
+      deactivatedFeatures:
+        description: 'the features that are currently deactivated and thus denied
+          to users with rootAccess (returned only if the current token has rootAccess)
+
+          '
+        "$ref": "#/definitions/deactivated-features"
+      account:
+        description: the current account
+        "$ref": "#/definitions/account"
+      restrictedPort:
+        title: Restricted Port
+        description: whether your current connection is using a restricted port that
+          allows access to Tenant Management APIs (/org) but prevents access to Grid
+          Management APIs (/grid)
+        type: boolean
+        example: false
+  config-get-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - required:
+      - data
+      properties:
+        data:
+          "$ref": "#/definitions/config"
+  config-token:
+    title: Config Token
+    required:
+    - expires
+    properties:
+      expires:
+        title: Token Expiration
+        description: time when the token expires
+        type: string
+        format: date-time
+        example: '2028-09-04T00:00:00.000Z'
+  config-user:
+    title: Config User
+    required:
+    - id
+    - username
+    - uniqueName
+    - firstName
+    - fullName
+    - federated
+    - managementReadOnly
+    properties:
+      id:
+        title: Id
+        description: UUID for the User (generated automatically)
+        type: string
+        format: uuid
+        example: 00000000-0000-0000-0000-000000000000
+      username:
+        title: Username
+        description: the username that is used to sign in
+        type: string
+        example: Test
+        maxLength: 1024
+      uniqueName:
+        title: Unique Name
+        description: the machine-readable name for the User (unique within an Account)
+        type: string
+        example: user/Test
+        maxLength: 1024
+      firstName:
+        title: First Name
+        description: the User's first name
+        type: string
+        example: Test
+        maxLength: 32
+      fullName:
+        title: Full Name
+        description: the human-readable name for the User
+        type: string
+        example: Test User
+        maxLength: 128
+      federated:
+        title: Federated
+        description: true if the User is federated, for example, an LDAP User
+        type: boolean
+      managementReadOnly:
+        title: Management Read Only
+        description: whether the user is in a read-only group.
+        type: boolean
+        example: false
+  product-version:
+    type: object
+    required:
+    - productVersion
+    properties:
+      productVersion:
+        title: Product Version
+        description: 'the product release version currently running on the Admin Node
+          serving the request
+
+          '
+        type: string
+        example: 10.3.0-20160614.1639.bf71535
+  product-version-get-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - required:
+      - data
+      properties:
+        data:
+          "$ref": "#/definitions/product-version"
+  password-change-request:
+    title: Change Password
+    required:
+    - password
+    properties:
+      password:
+        title: New password
+        type: string
+        minLength: 8
+        maxLength: 32
+      currentPassword:
+        title: Current password
+        description: required for requests that change the password of the current
+          User
+        type: string
+        minLength: 8
+        maxLength: 32
+  post-user-request:
+    title: User
+    description: Creates a local User.
+    required:
+    - uniqueName
+    properties:
+      uniqueName:
+        title: Unique name
+        description: the machine-readable name for the User (unique within an Account;
+          must begin with user/ or federated-user/). The portion after the slash is
+          the "username" that is used to sign in
+        type: string
+        example: user/Test
+        maxLength: 1024
+      fullName:
+        title: Full name
+        description: the human-readable name for the User (required for local Users
+          and imported automatically for federated Users)
+        type: string
+        example: Test User
+        maxLength: 128
+      memberOf:
+        description: Group memberships for this User (required for local Users and
+          imported automatically for federated Users)
+        type: array
+        items:
+          type: string
+          format: uuid
+        example:
+        - 00000000-0000-0000-0000-000000000000
+      disable:
+        title: Prevent login
+        description: if true, the local User cannot sign in (does not apply to federated
+          Users)
+        type: boolean
+        default: false
+  user:
+    title: User
+    description: Users can be local or federated.
+    allOf:
+    - "$ref": "#/definitions/post-user-request"
+    - required:
+      - accountId
+      - id
+      - federated
+      - userURN
+    - properties:
+        accountId:
+          title: Account Identifier
+          description: Storage Tenant Account ID
+          type: string
+          example: '0'
+        id:
+          title: Id
+          description: UUID for the User (generated automatically)
+          type: string
+          format: uuid
+          example: 00000000-0000-0000-0000-000000000000
+        federated:
+          title: Federated
+          description: true if the User is federated, for example, an LDAP User
+          type: boolean
+        userURN:
+          title: User Uniform Resource Name
+          description: contains the User uniqueName and Account ID (generated automatically)
+          type: string
+          example: urn:sgws:identity::0:user/Test
+  user-with-clone-status:
+    title: User
+    description: Users can be local or federated.
+    allOf:
+    - "$ref": "#/definitions/user"
+    - required:
+      - accountId
+      - id
+      - federated
+      - userURN
+    - properties:
+        cloneStatus:
+          title: Grid Federation Clone Status
+          description: clone status for connections used in grid federation
+          type: object
+          example:
+            b1e721a5-1d23-4ee8-82ce-2b529c592961:
+              succeeded: true
+              time: '2022-01-01T01:00:00.000Z'
+              error: 
+            9c1567c2-1e69-4d94-b47b-f4bcdd470377:
+              succeeded: false
+              time: '2022-01-01T01:00:00.000Z'
+              error: Failed to clone user to the other grid
+  list-users-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/definitions/user-with-clone-status"
+      required:
+      - data
+  get-post-put-user-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/user"
+      required:
+      - data
+  post-user-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - "$ref": "#/definitions/alert-metadata-response"
+    - properties:
+        data:
+          "$ref": "#/definitions/user"
+        metadata:
+          properties:
+            alerts:
+              title: Metadata alerts related to user clone
+              description: Messages reported when cloning a user to the tenant's destination
+                grid using a grid federation connection
+              items:
+                title: Alert message for an user clone failure
+                properties:
+                  severity:
+                    example: warning
+                  text:
+                    example: Reason the user could not be cloned to the other grid.
+                  key:
+                    example: grid_federation_connection.errors.remote_delete_failure
+      required:
+      - data
+  get-put-user-clone-status-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          type: object
+          description: A map of grid federation connection IDs to clone status and
+            error.
+          example:
+            b1e721a5-1d23-4ee8-82ce-2b529c592961:
+              succeeded: true
+              time: '2022-01-01T01:00:00.000Z'
+              error: 
+            9c1567c2-1e69-4d94-b47b-f4bcdd470377:
+              succeeded: false
+              time: '2022-01-01T01:00:00.000Z'
+              error: Failed to clone user to the other grid
+      required:
+      - data
+  s3-access-key-expires:
+    title: Key expiration time
+    description: The time after which the key pair will no longer be valid. Null means
+      the key pair never expires.
+    type: string
+    format: date-time
+    example: '2028-09-04T00:00:00.000Z'
+  s3-access-key:
+    title: S3 access key
+    description: S3 credential pair information
+    type: object
+    required:
+    - id
+    - accountId
+    - displayName
+    - userUUID
+    properties:
+      id:
+        title: S3 credential pair identifier
+        description: A unique identifier for the S3 credential pair (automatically
+          assigned when an access key is created)
+        type: string
+        example: abcABC_01234-0123456789abcABCabc0123456789==
+      accountId:
+        title: Account identifier
+        description: Storage Tenant Account ID
+        type: string
+        example: 12345678901234567890
+      displayName:
+        title: Display name
+        description: Obfuscated access key
+        type: string
+        example: "****************AB12"
+      userURN:
+        title: User uniform resource name
+        description: Contains the user name and account ID (generated automatically)
+        type: string
+        example: urn:sgws:identity::12345678901234567890:root
+      userUUID:
+        title: User universally unique ID
+        description: ID that uniquely identifies the user (generated automatically)
+        type: string
+        example: 00000000-0000-0000-0000-000000000000
+      expires:
+        "$ref": "#/definitions/s3-access-key-expires"
+  s3-access-key-with-clone-status:
+    title: S3 access key
+    description: S3 credential pair information
+    allOf:
+    - "$ref": "#/definitions/s3-access-key"
+    - required:
+      - id
+      - accountId
+      - displayName
+      - userUUID
+    - properties:
+        cloneStatus:
+          title: Grid Federation Clone Status
+          description: clone status for connections used in grid federation
+          type: object
+          example:
+            b1e721a5-1d23-4ee8-82ce-2b529c592961:
+              succeeded: true
+              time: '2022-01-01T01:00:00.000Z'
+              error: 
+            9c1567c2-1e69-4d94-b47b-f4bcdd470377:
+              succeeded: false
+              time: '2022-01-01T01:00:00.000Z'
+              error: Failed to clone the S3 access key to the other grid
+  s3-access-keys-replicate-request:
+    properties:
+      accessKey:
+        description: The S3 access key ID to clone.
+        type: string
+        example: AKIAIOSFODNN7EXAMPLE
+      secretAccessKey:
+        description: The S3 secret access key to clone.
+        type: string
+        example: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      expires:
+        description: Optional. The time after which the key pair will no longer be
+          valid. Null means the key pair never expires.
+        type: string
+        format: date-time
+        example: '2028-09-04T00:00:00.000Z'
+    required:
+    - accessKey
+    - secretAccessKey
+  s3-access-key-with-secrets:
+    title: S3 access key with secrets
+    description: S3 credential pair and associated user/account information
+    allOf:
+    - "$ref": "#/definitions/s3-access-key"
+    - type: object
+    - properties:
+        accessKey:
+          title: Access key
+          description: generated automatically (returned only when generated and otherwise
+            omitted)
+          type: string
+          example: ABCDEFabcd1234567890
+        secretAccessKey:
+          title: Secret access key
+          description: generated automatically (returned only when generated and otherwise
+            omitted)
+          type: string
+          example: abcABC+123456789012345678901234567890123
+  list-access-keys-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          type: array
+          items:
+            "$ref": "#/definitions/s3-access-key-with-clone-status"
+      required:
+      - data
+  get-access-key-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/s3-access-key"
+      required:
+      - data
+  post-access-key-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/s3-access-key-with-secrets"
+      required:
+      - data
+  get-put-key-clone-status-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          type: object
+          description: A map of grid federation connection IDs to clone status and
+            error.
+          example:
+            b1e721a5-1d23-4ee8-82ce-2b529c592961:
+              succeeded: true
+              time: '2022-01-01T01:00:00.000Z'
+              error: 
+            9c1567c2-1e69-4d94-b47b-f4bcdd470377:
+              succeeded: false
+              time: '2022-01-01T01:00:00.000Z'
+              error: Failed to clone access key to the other grid
+      required:
+      - data
+  account:
+    title: Storage Tenant Account (Organization)
+    type: object
+    required:
+    - id
+    - name
+    properties:
+      id:
+        title: Account Identifier
+        description: a unique identifier for the account (automatically assigned when
+          an account is created)
+        type: string
+        example: '12345678901234567890'
+      name:
+        title: Display Name
+        description: the descriptive name specified for the account (This name is
+          for display only and might not be unique.)
+        type: string
+        maxLength: 64
+        example: Widgets Unlimited
+      capabilities:
+        title: Capabilities
+        description: the high-level features enabled for this account, such as S3
+          or Swift protocols (Accounts must have the "management" capability if users
+          will sign into the Tenant Manager.)
+        type: array
+        items:
+          type: string
+          enum:
+          - management
+          - s3
+          - swift
+        example:
+        - management
+        - s3
+      policy:
+        description: settings for the tenant account
+        "$ref": "#/definitions/policy-account"
+      accountReplica:
+        title: Whether this tenant was created on another grid and replicated to this
+          grid using grid federation.
+        description: Automatically assigned when generating the response. Ignored
+          in the PUT body. Present only if this tenant account has permission to use
+          a grid federation connection. If true, this account on the local grid is
+          a replica of an account created on another grid. If false, this account
+          was created on the local grid and is not a copy.
+        type: boolean
+        example: false
+  account-usage-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          title: Storage Tenant Account usage metrics
+          type: object
+          required:
+          - calculationTime
+          - objectCount
+          - dataBytes
+          properties:
+            calculationTime:
+              description: time when the usage data was calculated
+              type: string
+              format: date-time
+            objectCount:
+              description: number of objects under this Account
+              type: integer
+            dataBytes:
+              description: logical size in bytes of all objects under this Account
+              type: integer
+            buckets:
+              description: per-container usage metrics (including S3 buckets)
+              type: array
+              items:
+                type: object
+                title: Container usage metrics
+                required:
+                - name
+                - objectCount
+                - dataBytes
+                properties:
+                  name:
+                    description: container name
+                    type: string
+                  objectCount:
+                    description: number of objects in this container
+                    type: integer
+                  dataBytes:
+                    description: logical size in bytes of all objects in this container
+                    type: integer
+                  consistency:
+                    description: The consistency control affects the availability
+                      of objects for client requests.
+                    type: string
+                    enum:
+                    - all
+                    - strong-global
+                    - strong-site
+                    - read-after-new-write
+                    - available
+                    example: available
+                  encryption:
+                    description: Encryption algorithm used to encrypt objects when
+                      object are ingested into this bucket. If null, bucket objects
+                      are not encrypted when ingested.
+                    type: string
+                    example: AES256
+                  versioningEnabled:
+                    description: versioningEnabled is true if bucket versioning is
+                      currently enabled. It is false if versioning is suspended or
+                      if versioning was never enabled.
+                    type: boolean
+                  versioningSuspended:
+                    description: versioningSuspended is true if bucket versioning
+                      is currently suspended. It is false if versioning is not suspended
+                      or if versioning was never enabled.
+                    type: boolean
+                  region:
+                    description: the region of this bucket
+                    type: string
+                    example: us-east-1
+  identity-source:
+    title: Identity Source
+    description: An external LDAP server for authentication.
+    type: object
+    required:
+    - id
+    - ldapServiceType
+    - hostname
+    - port
+    - username
+    - password
+    - baseGroupDn
+    - baseUserDn
+    properties:
+      id:
+        title: Identity Source identifier
+        description: a unique identifier for the identity source (automatically assigned
+          when the identity source is configured)
+        type: string
+        example: 00000000-0000-0000-0000-000000000000
+      disable:
+        title: disable
+        description: whether the identity source will be used for authentication
+        type: boolean
+        default: true
+      hostname:
+        title: Hostname
+        description: the server hostname or IP address of the identity source
+        type: string
+        example: 10.1.2.3
+      port:
+        title: Port
+        description: the port to use to connect to the identity source
+        type: integer
+        example: 389
+      username:
+        title: Username
+        description: the username to use to access the identity source
+        type: string
+        example: MYDOMAIN\Administrator
+      password:
+        title: Password
+        description: the password to use to access the identity source
+        type: string
+        example: mypassword
+      baseGroupDn:
+        title: Group Base DN
+        description: the fully qualified Distinguished Name (DN) of an LDAP subtree
+          you want to search for groups
+        type: string
+        example: DC=example,DC=com
+      baseUserDn:
+        title: User Base DN
+        description: the fully qualified Distinguished Name (DN) of an LDAP subtree
+          you want to search for users
+        type: string
+        example: DC=example,DC=com
+      bindUsernameFormat:
+        title: Bind username format
+        description: the default username pattern StorageGRID should use if the pattern
+          cannot be determined automatically
+        type: string
+        example: "[USERNAME]@example.com"
+        maxLength: 256
+      ldapServiceType:
+        title: LDAP service type
+        description: type of the LDAP service
+        type: string
+        enum:
+        - OpenLDAP
+        - Active Directory
+        - Other
+      type:
+        title: type
+        description: type of the identity source
+        type: string
+        enum:
+        - ldap
+        default: ldap
+      ldapUserIdAttribute:
+        title: LDAP User ID Attribute
+        description: LDAP attribute that identifies the LDAP user who attempts authentication
+          with unique name/login (only required when ldapServiceType is "Other")
+        type: string
+        example: sAMAccountName
+      ldapUserUUIDAttribute:
+        title: LDAP User UUID Attribute
+        description: LDAP attribute that identifies the LDAP user's permanent unique
+          identity (only required when ldapServiceType is "Other")
+        type: string
+        example: objectGUID
+      ldapGroupIdAttribute:
+        title: LDAP Group ID Attribute
+        description: LDAP attribute that identifies the LDAP group of the user who
+          attempts authentication (only required when ldapServiceType is "Other")
+        type: string
+        example: sAMAccountName
+      ldapGroupUUIDAttribute:
+        title: LDAP Group UUID Attribute
+        description: LDAP attribute that identifies the LDAP group's permanent unique
+          identity (only required when ldapServiceType is "Other")
+        type: string
+        example: objectGUID
+      disableTLS:
+        title: Disable TLS
+        description: whether Transport Layer Security (TLS) is used to connect to
+          the identity source server
+        type: boolean
+        default: false
+      enableLDAPS:
+        title: Enable LDAPS
+        description: whether to use LDAPS instead of STARTTLS to connect to the identity
+          source server. STARTTLS is the default and is recommended.
+        type: boolean
+        default: false
+      caCert:
+        title: CA Certificate
+        description: custom certificate to use to connect to the identity source server
+          (if no custom certificate is supplied and TLS is enabled, the Operating
+          System CA certificate will be used)
+        type: string
+        example: "-----BEGIN CERTIFICATE----- abcdefghijkl123456780ABCDEFGHIJKL 123456/7890ABCDEFabcdefghijklABCD
+          -----END CERTIFICATE-----\n"
+  identity-source-with-test-user:
+    title: Identity Source with test user
+    description: An external LDAP server for authentication.
+    type: object
+    allOf:
+    - "$ref": "#/definitions/identity-source"
+    - properties:
+        testUsername:
+          title: Test username
+          description: the username of a federated user, which will be used to test
+            the bind username format
+          type: string
+          example: username
+          maxLength: 256
+        testPassword:
+          title: Test password
+          description: the password for the test user
+          type: string
+          example: password
+          maxLength: 256
+  identity-source-get-put-response:
+    allOf:
+    - "$ref": "#/definitions/response"
+    - properties:
+        data:
+          "$ref": "#/definitions/identity-source"
+      required:
+      - data
