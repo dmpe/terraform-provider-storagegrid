@@ -49,7 +49,7 @@ func (p *storagegridProvider) Schema(ctx context.Context, req provider.SchemaReq
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"address": schema.StringAttribute{
-				Description: "The address of StorageGrid tenant. Full FQDN with port number if some non-standard is used.",
+				Description: "The address of StorageGrid tenant. Full FQDN with port number if some non-standard is used. Must be without '/' at the end.",
 				Optional:    false,
 				Required:    true,
 				Sensitive:   false,
