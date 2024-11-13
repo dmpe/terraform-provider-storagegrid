@@ -32,6 +32,7 @@ generate:
 
 fmt:
 	gofmt -s -w -e internal
+	gofmt -s -w -e tests/test.go
 	terraform fmt -write=true -recursive=true tests/terraform 
 
 testacc:
