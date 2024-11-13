@@ -97,7 +97,7 @@ func (c *S3GridClient) SendAuthorizeRequest(statusCode int) (tokenValue string, 
 	resp.Body.Close()
 
 	if statusCode != 0 && resp.StatusCode != statusCode {
-		return "", resp.StatusCode, fmt.Errorf("[ERROR] unexpected status code got: %v expected: %v \n %v", resp.StatusCode, statusCode)
+		return "", resp.StatusCode, fmt.Errorf("[ERROR] unexpected status code got: %v expected: %v \n %v", statusCode, resp.StatusCode, statusCode)
 	}
 
 	return jsonD.Data, resp.StatusCode, nil
