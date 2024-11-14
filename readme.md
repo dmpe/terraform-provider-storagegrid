@@ -37,9 +37,8 @@ Configuring [required providers](https://www.terraform.io/docs/language/provider
 
 ```terraform
 terraform {
-  required_version = ">= 1.0.0"
   required_providers {
-    elasticstack = {
+    storagegrid = {
       source  = "dmpe/storagegrid"
       version = "" # My strong advice - always pin this provider's version!
     }

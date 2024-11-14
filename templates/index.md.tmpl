@@ -1,0 +1,26 @@
+---
+page_title: "{{ .ProviderShortName }} Provider"
+description: |-
+  NetApp StorageGrid provider for working with S3 REST API.
+---
+
+# NetApp {{ .ProviderShortName }} Provider
+
+This unofficial NetApp provider can be used to interact with [StorageGrid](https://www.netapp.com/data-storage/storagegrid/) system.
+Such system, be it a hardware or virtual appliance, supports Amazon S3 protocol.
+
+It is import to note that this provider only supports "TENANT" REST API - not the administrative "GRID" REST API.
+
+See also provider's documentation on GitHub, and on [NetApp](https://docs.netapp.com/us-en/storagegrid-family/).
+
+## Example Provider Usage
+
+{{ tffile "examples/provider/main.tf" }}
+
+### Using environmental variables
+
+{{ tffile "examples/provider/main_env.tf" }}
+
+
+{{ .SchemaMarkdown | trimspace }}
+
