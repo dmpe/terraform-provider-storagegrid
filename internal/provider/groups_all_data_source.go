@@ -38,7 +38,7 @@ func (d *groupsDataSource) Metadata(ctx context.Context, req datasource.Metadata
 func (d *groupsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "groups data source",
+		MarkdownDescription: "Fetch all groups - a data source",
 
 		Attributes: map[string]schema.Attribute{
 			"data": schema.ListNestedAttribute{
@@ -103,7 +103,7 @@ func (d *groupsDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 										"statement": schema.ListNestedAttribute{
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
-													"action": schema.ListAttribute{
+													act: schema.ListAttribute{
 														ElementType:         types.StringType,
 														Optional:            true,
 														Computed:            true,

@@ -3,12 +3,12 @@
 page_title: "storagegrid_groups Resource - storagegrid"
 subcategory: ""
 description: |-
-  Groups resource
+  Create new group - a resource
 ---
 
 # storagegrid_groups (Resource)
 
-Groups resource
+Create new group - a resource
 
 
 
@@ -18,7 +18,7 @@ Groups resource
 ### Required
 
 - `display_name` (String)
-- `management_read_only` (Boolean)
+- `management_read_only` (Boolean) Select whether users can change settings and perform operations or whether they can only view settings and features.
 - `policies` (Attributes) (see [below for nested schema](#nestedatt--policies))
 - `unique_name` (String)
 
@@ -49,7 +49,7 @@ Optional:
 - `manage_endpoints` (Boolean)
 - `manage_own_container_objects` (Boolean)
 - `manage_own_s3_credentials` (Boolean)
-- `root_access` (Boolean)
+- `root_access` (Boolean) Allows users to access all administration features. Root access permission supersedes all other permissions.
 
 
 <a id="nestedatt--policies--s3"></a>

@@ -17,12 +17,13 @@ description: |-
 
 ### Required
 
-- `address` (String) The address of StorageGrid tenant. Full FQDN with port number if some non-standard is used.
-- `password` (String, Sensitive) Provider password.
-- `tenant` (String) Provide tenant id.
-- `username` (String) Provider username.
+- `address` (String) The address of StorageGrid system. FQDN with port number, if some non-standard is used.
+Must be without `/` at the end and without `api/v3` suffix which is added automatically.
+- `password` (String, Sensitive) StorageGrid (tenant) password.
+- `tenant` (String) Provide tenant ID.
+- `username` (String) StorageGrid (tenant) local or federated username.
 
 ### Optional
 
 - `enable_trace_context` (Boolean) Enable trace context. If `true` a `Traceparent` header will be added to the request. Default: `false`
-- `insecure` (Boolean) Use insecure HTTP connection? Setting this to true will ignore certificates. Default: `false`
+- `insecure` (Boolean) Use insecure HTTP connection. Setting this to true will ignore certificates when calling REST API. Default: `false`

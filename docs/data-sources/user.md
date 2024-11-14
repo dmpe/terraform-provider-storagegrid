@@ -3,12 +3,12 @@
 page_title: "storagegrid_user Data Source - storagegrid"
 subcategory: ""
 description: |-
-  user data source
+  Fetch a specific user by ID - a data source
 ---
 
 # storagegrid_user (Data Source)
 
-user data source
+Fetch a specific user by ID - a data source
 
 
 

@@ -1,5 +1,5 @@
-// Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) github.com/dmpe
+// SPDX-License-Identifier: MIT
 
 package provider
 
@@ -49,26 +49,26 @@ func (p *storagegridProvider) Schema(ctx context.Context, req provider.SchemaReq
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"address": schema.StringAttribute{
-				Description: "The address of StorageGrid tenant. Full FQDN with port number if some non-standard is used. 
-				Must be without '/' at the end.",
-				Optional:    false,
-				Required:    true,
-				Sensitive:   false,
+				Description: "The address of StorageGrid system. FQDN with port number, if some non-standard is used.\n" +
+					"Must be without `/` at the end and without `api/v3` suffix which is added automatically.",
+				Optional:  false,
+				Required:  true,
+				Sensitive: false,
 			},
 			"username": schema.StringAttribute{
-				Description: "Provider username.",
+				Description: "StorageGrid (tenant) local or federated username.",
 				Optional:    true,
 				Required:    true,
 				Sensitive:   false,
 			},
 			"password": schema.StringAttribute{
-				Description: "Provider password.",
+				Description: "StorageGrid (tenant) password.",
 				Optional:    true,
 				Required:    true,
 				Sensitive:   true,
 			},
 			"tenant": schema.StringAttribute{
-				Description: "Provide tenant id.",
+				Description: "Provide tenant ID.",
 				Optional:    true,
 				Required:    true,
 				Sensitive:   false,
@@ -79,8 +79,7 @@ func (p *storagegridProvider) Schema(ctx context.Context, req provider.SchemaReq
 			},
 			"insecure": schema.BoolAttribute{
 				Optional:            true,
-				Description:         "Use insecure HTTP connection",
-				MarkdownDescription: "Use insecure HTTP connection? Setting this to true will ignore certificates. Default: `false`",
+				MarkdownDescription: "Use insecure HTTP connection. Setting this to true will ignore certificates when calling REST API. Default: `false`",
 			},
 		},
 	}

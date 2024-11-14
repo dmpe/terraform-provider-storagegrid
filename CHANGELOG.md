@@ -1,4 +1,11 @@
-## 0.1.0
+## 1.1.0
+
+FEATURES:
+
+- Expand documentation and update it
+- Add new examples in the documentation
+
+## 1.0.0
 
 FEATURES:
 
