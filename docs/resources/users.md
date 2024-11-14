@@ -3,12 +3,12 @@
 page_title: "storagegrid_users Resource - storagegrid"
 subcategory: ""
 description: |-
-  Users resource
+  Create a new user - a resource
 ---
 
 # storagegrid_users (Resource)
 
-Users resource
+Create a new user - a resource
 
 
 
@@ -23,7 +23,7 @@ Users resource
 
 ### Optional
 
-- `disable` (Boolean)
+- `disable` (Boolean) Do you want to prevent this user from signing in regardless of assigned group permissions?
 
 ### Read-Only
 

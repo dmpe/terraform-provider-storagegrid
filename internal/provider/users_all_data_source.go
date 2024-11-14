@@ -34,7 +34,7 @@ func (d *usersDataSource) Metadata(ctx context.Context, req datasource.MetadataR
 func (d *usersDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "users data source",
+		MarkdownDescription: "Fetch all users - a data source",
 
 		Attributes: map[string]schema.Attribute{
 			"data": schema.ListNestedAttribute{
@@ -46,7 +46,7 @@ func (d *usersDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 						"unique_name": schema.StringAttribute{
 							Computed: true,
 						},
-						"full_name": schema.StringAttribute{
+						fl_name: schema.StringAttribute{
 							Computed: true,
 						},
 						"disable": schema.BoolAttribute{

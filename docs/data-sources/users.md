@@ -3,12 +3,12 @@
 page_title: "storagegrid_users Data Source - storagegrid"
 subcategory: ""
 description: |-
-  users data source
+  Fetch all users - a data source
 ---
 
 # storagegrid_users (Data Source)
 
-users data source
+Fetch all users - a data source
 
 
 

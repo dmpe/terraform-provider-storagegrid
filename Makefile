@@ -21,8 +21,8 @@ install_dnf:
 	go install -v golang.org/x/tools/cmd/goimports@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
-lint:
-	golangci-lint run
+lint: fmt
+	golangci-lint run internal/provider
 
 build: 
 	go mod tidy; go install .

@@ -185,11 +185,8 @@ type groupsDataSourceGolangModelSingle struct {
 }
 
 /*
-
 These are for creating new group (as part of resources)
-
 */
-
 type GroupPostPolicies struct {
 	Management ManagementPolicy `json:"management"`
 	S3         S3PostPolicy     `json:"s3"`
@@ -264,7 +261,6 @@ type usersDataSourceDataModel struct {
 /*
 These are for creating or fetching S3 access/secret keys
 */
-
 type UserIDS3AccessKeys struct {
 	Data []S3AccessKey `json:"data"`
 }
