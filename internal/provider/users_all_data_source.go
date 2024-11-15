@@ -43,7 +43,7 @@ func (d *usersDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 				MarkdownDescription: "the response data for the request (required on success and optional on error; type and content vary by request)",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"unique_name": schema.StringAttribute{
+						unique_name: schema.StringAttribute{
 							Computed: true,
 						},
 						fl_name: schema.StringAttribute{
@@ -55,7 +55,7 @@ func (d *usersDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 						"account_id": schema.StringAttribute{
 							Computed: true,
 						},
-						"id": schema.StringAttribute{
+						id: schema.StringAttribute{
 							Computed: true,
 						},
 						"federated": schema.BoolAttribute{

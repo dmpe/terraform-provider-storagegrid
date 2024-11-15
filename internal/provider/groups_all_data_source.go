@@ -193,7 +193,7 @@ func (d *groupsDataSource) Configure(ctx context.Context, req datasource.Configu
 }
 
 func (d *groupsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state GroupsDataSourceModel
+	var state GroupsDataSourceDataModel
 	var jsonData groupsDataSourceGolangModel
 	var newDiags diag.Diagnostics
 

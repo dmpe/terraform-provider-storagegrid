@@ -7,9 +7,9 @@ description: |-
 # NetApp storagegrid Provider
 
 This unofficial NetApp provider can be used to interact with [StorageGrid](https://www.netapp.com/data-storage/storagegrid/) system.
-Such system, be it a hardware or virtual appliance, supports Amazon S3 protocol.
+StorageGrid is a hardware or virtual appliance which provides support for Amazon S3 object storage protocol.
 
-It is import to note that this provider only supports "TENANT" REST API - not the administrative "GRID" REST API.
+It is import to note that this provider only assumes to work against "TENANT" REST API - not the administrative "GRID" REST API.
 
 See also provider's documentation on GitHub, and on [NetApp](https://docs.netapp.com/us-en/storagegrid-family/).
 
@@ -65,5 +65,5 @@ Must be without `/` at the end and without `api/v3` suffix which is added automa
 ### Optional
 
 - `enable_trace_context` (Boolean) Enable trace context. If `true` a `Traceparent` header will be added to the request. Default: `false`
-- `insecure` (Boolean) Use insecure HTTP connection. Setting this to true will ignore certificates when calling REST API. Default: `false`
+- `insecure` (Boolean) Use insecure HTTP connection. Setting this to `true` will ignore certificates when calling REST API. Default: `false`
 

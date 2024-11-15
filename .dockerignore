@@ -6,7 +6,7 @@ internal/
 templates/
 tests/
 tools/
-go.*
+go.sum
 *.go
 *.yml
 *.yaml

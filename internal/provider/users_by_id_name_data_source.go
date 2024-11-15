@@ -40,29 +40,24 @@ func (d *userDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 		MarkdownDescription: "Fetch a specific user by ID - a data source",
 		Attributes: map[string]schema.Attribute{
 			unique_name: schema.StringAttribute{
-				Optional: true,
+				MarkdownDescription: "User's unique name - must have either `user/` or `federated-user/` prefix.",
+				Optional:            true,
 				Validators: []validator.String{
-					stringvalidator.AtLeastOneOf(
-						path.MatchRelative().AtParent().AtName(id),
-						path.MatchRelative().AtParent().AtName(unique_name),
+					stringvalidator.ConflictsWith(path.MatchRoot(id)),
+					stringvalidator.ExactlyOneOf(
+						path.MatchRoot(id),
+						path.MatchRoot(unique_name),
 					),
 				},
 			},
-			fl_name: schema.StringAttribute{
-				Computed: true,
-			},
-			"disable": schema.BoolAttribute{
-				Computed: true,
-			},
-			"account_id": schema.StringAttribute{
-				Computed: true,
-			},
 			id: schema.StringAttribute{
-				Optional: true,
+				MarkdownDescription: "The user ID.",
+				Optional:            true,
 				Validators: []validator.String{
-					stringvalidator.AtLeastOneOf(
-						path.MatchRelative().AtParent().AtName(id),
-						path.MatchRelative().AtParent().AtName(unique_name),
+					stringvalidator.ConflictsWith(path.MatchRoot(unique_name)),
+					stringvalidator.ExactlyOneOf(
+						path.MatchRoot(id),
+						path.MatchRoot(unique_name),
 					),
 				},
 			},
@@ -75,6 +70,15 @@ func (d *userDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 			"member_of": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
+			},
+			fl_name: schema.StringAttribute{
+				Computed: true,
+			},
+			"disable": schema.BoolAttribute{
+				Computed: true,
+			},
+			"account_id": schema.StringAttribute{
+				Computed: true,
 			},
 		},
 	}
