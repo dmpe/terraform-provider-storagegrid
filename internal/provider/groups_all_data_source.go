@@ -193,7 +193,7 @@ func (d *groupsDataSource) Configure(ctx context.Context, req datasource.Configu
 }
 
 func (d *groupsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state groupsDataSourceModel
+	var state GroupsDataSourceModel
 	var jsonData groupsDataSourceGolangModel
 	var newDiags diag.Diagnostics
 
@@ -263,7 +263,7 @@ func (d *groupsDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			Statement: s3Sts,
 		}
 
-		groupData := &groupsDataSourceDataModel{
+		groupData := &GroupsDataSourceModel{
 			ID:                 types.StringValue(item.ID),
 			AccountID:          types.StringValue(item.AccountID),
 			DisplayName:        types.StringValue(item.DisplayName),
@@ -271,7 +271,7 @@ func (d *groupsDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			GroupURN:           types.StringValue(item.GroupURN),
 			Federated:          types.BoolValue(item.Federated),
 			ManagementReadOnly: types.BoolValue(item.ManagementReadOnly),
-			Policies: &policiesDataModel{
+			Policies: &PoliciesModel{
 				Management: mgmtPolicies,
 				S3:         s3Policy,
 			},

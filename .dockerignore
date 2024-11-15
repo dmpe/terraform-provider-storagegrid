@@ -1,0 +1,14 @@
+.github/
+.vscode/
+docs/
+examples/
+internal/
+templates/
+tests/
+tools/
+go.*
+*.go
+*.yml
+*.yaml
+*.json
+*.hcl
