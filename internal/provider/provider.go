@@ -79,7 +79,7 @@ func (p *storagegridProvider) Schema(ctx context.Context, req provider.SchemaReq
 			},
 			"insecure": schema.BoolAttribute{
 				Optional:            true,
-				MarkdownDescription: "Use insecure HTTP connection. Setting this to true will ignore certificates when calling REST API. Default: `false`",
+				MarkdownDescription: "Use insecure HTTP connection. Setting this to `true` will ignore certificates when calling REST API. Default: `false`",
 			},
 		},
 	}
@@ -219,8 +219,8 @@ func (p *storagegridProvider) Configure(ctx context.Context, req provider.Config
 		tenant,
 		insecure,
 	)
-	authZToken, _, _ := clientUsPsw.SendAuthorizeRequest(200)
-	client := NewTokenClient(address, authZToken, insecure)
+	bearerToken, _, _ := clientUsPsw.SendAuthorizeRequest(200)
+	client := NewTokenClient(address, bearerToken, insecure)
 	resp.DataSourceData = client
 	resp.ResourceData = client
 

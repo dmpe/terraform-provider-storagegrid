@@ -238,7 +238,7 @@ func (r *groupsResource) Configure(ctx context.Context, req resource.ConfigureRe
 }
 
 func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan groupsDataSourceDataModel
+	var plan GroupsDataSourceModel
 	var s3Sts []GroupPostPolicyStatement
 	var returnBody groupsDataSourceGolangModelSingle
 	var returnS3Sts []*S3PolicyStatementDataModel
@@ -367,7 +367,7 @@ func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest,
 		Version:   types.StringValue(returnBody.Data.Policies.S3.Version),
 		Statement: returnS3Sts,
 	}
-	newPolicies := &policiesDataModel{
+	newPolicies := &PoliciesModel{
 		Management: returnMgmtPolicies,
 		S3:         returnS3Policy,
 	}
@@ -384,7 +384,7 @@ func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest,
 
 func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state groupsDataSourceDataModel
+	var state GroupsDataSourceModel
 	var returnBody groupsDataSourceGolangModelSingle
 	var returnS3Sts []*S3PolicyStatementDataModel
 	diags := req.State.Get(ctx, &state)
@@ -459,7 +459,7 @@ func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, res
 		Version:   types.StringValue(returnBody.Data.Policies.S3.Version),
 		Statement: returnS3Sts,
 	}
-	newPolicies := &policiesDataModel{
+	newPolicies := &PoliciesModel{
 		Management: returnMgmtPolicies,
 		S3:         returnS3Policy,
 	}
@@ -475,8 +475,8 @@ func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var state groupsDataSourceDataModel
-	var plan groupsDataSourceDataModel
+	var state GroupsDataSourceModel
+	var plan GroupsDataSourceModel
 	var returnBody groupsDataSourceGolangModelSingle
 	var s3Sts []GroupPostPolicyStatement
 	var returnS3Sts []*S3PolicyStatementDataModel
@@ -621,7 +621,7 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 		Version:   types.StringValue(returnBody.Data.Policies.S3.Version),
 		Statement: returnS3Sts,
 	}
-	newPolicies := &policiesDataModel{
+	newPolicies := &PoliciesModel{
 		Management: returnMgmtPolicies,
 		S3:         returnS3Policy,
 	}
@@ -633,7 +633,7 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 }
 
 func (r *groupsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state groupsDataSourceDataModel
+	var state GroupsDataSourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
