@@ -7,6 +7,8 @@ TF_CLI_CONFIG_FILE=/home/.terraformrc
 TF_LOG=debug
 TF_ACC=1
 
+export PATH := /root/go/bin/:$(PATH)
+
 docker: 
 	docker build -f Dockerfile -t storagegrid_dev:latest .
 
@@ -14,7 +16,7 @@ install_dnf:
 	dnf install -y golang
 	go install -v golang.org/x/tools/gopls@latest
 	go install -v golang.org/x/tools/cmd/goimports@latest
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
 
 lint: fmt
 	golangci-lint run internal/provider

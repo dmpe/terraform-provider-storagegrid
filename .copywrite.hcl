@@ -7,6 +7,7 @@ project {
   header_ignore = [
     ".github/**",
     "examples/**",
+    "Dockerfile",
     ".goreleaser.yml",
   ]
 }

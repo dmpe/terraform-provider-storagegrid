@@ -131,15 +131,22 @@ overcome several issues with StorageGRID REST API (=json file) without doing man
 - `tools` folder contains some additional functionality such as adding file headers (`copywrite`) or code for aforementioned generation of documentation. 
 Additionally, in `tools/rest-api`, it contains Swagger/OpenAPI export for specific StorageGRID version(s). 
 - In `root` we can find:
+  - `.terraformrc` file which is used for local development. You may not need it. But you will, if your tests will include other Terraform providers (such as my internal tests that use HashiCorp Vault etc.)
   - `makefile` which essentially governs developing this provider. Execute as 
 
   ```
   make install_dnf
   make lint
   make fmt
+  make build
   ```
-  - `.terraformRC` file which is used for local development.
 
+The repo also contains `Dockerfile` which can be build using `make docker`. 
+After that you simply use inside the container different `make` commands like this:
 
-The repo contains `Dockerfile` which can be build using `make docker`. 
-After that you simply use `docker run -it -v $(pwd):/home storagegrid_dev:latest`. 
+```bash
+docker run -it -v $(pwd):/home storagegrid_dev:latest
+$ make build
+$ make lint
+....
+```
