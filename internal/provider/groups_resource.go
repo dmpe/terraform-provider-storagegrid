@@ -1,4 +1,4 @@
-// Copyright (c) HashiCorp, Inc.
+// Copyright (c) github.com/dmpe
 // SPDX-License-Identifier: MIT
 
 package provider
@@ -48,7 +48,7 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 	defaultEmptyTagList, _ := basetypes.NewListValue(types.StringType, []attr.Value{})
 
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Create new groups resource",
+		MarkdownDescription: "Create new group - a resource",
 		Attributes: map[string]schema.Attribute{
 			"group_urn": schema.StringAttribute{
 				Optional: true,
@@ -64,7 +64,7 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"id": schema.StringAttribute{
+			id: schema.StringAttribute{
 				Optional: true,
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
@@ -85,9 +85,9 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Required: true,
 			},
 			"management_read_only": schema.BoolAttribute{
-				MarkdownDescription: "Select whether users can change settings and perform operations or whether they can only view settings and features."
-				Description: "Select whether users can change settings and perform operations or whether they can only view settings and features."
-				Required: true,
+				MarkdownDescription: "Select whether users can change settings and perform operations or whether they can only view settings and features.",
+				Description:         "Select whether users can change settings and perform operations or whether they can only view settings and features.",
+				Required:            true,
 			},
 			"policies": schema.SingleNestedAttribute{
 				Required: true,
@@ -108,9 +108,9 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 								Optional: true,
 							},
 							"root_access": schema.BoolAttribute{
-								MarkdownDescription: "Allows users to access all administration features. Root access permission supersedes all other permissions."
-								Description: "Allows users to access all administration features. Root access permission supersedes all other permissions."
-								Optional: true,
+								MarkdownDescription: "Allows users to access all administration features. Root access permission supersedes all other permissions.",
+								Description:         "Allows users to access all administration features. Root access permission supersedes all other permissions.",
+								Optional:            true,
 							},
 						},
 					},
@@ -202,7 +202,7 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 								MarkdownDescription: "S3 API Version (currently not used)",
 								Default:             stringdefault.StaticString("2006-03-01"),
 							},
-							"id": schema.StringAttribute{
+							id: schema.StringAttribute{
 								Computed:            true,
 								Optional:            true,
 								Description:         "S3 Policy ID provided by policy generator tools (currently not used)",
@@ -238,7 +238,7 @@ func (r *groupsResource) Configure(ctx context.Context, req resource.ConfigureRe
 }
 
 func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan groupsDataSourceDataModel
+	var plan GroupsDataSourceModel
 	var s3Sts []GroupPostPolicyStatement
 	var returnBody groupsDataSourceGolangModelSingle
 	var returnS3Sts []*S3PolicyStatementDataModel
@@ -367,7 +367,7 @@ func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest,
 		Version:   types.StringValue(returnBody.Data.Policies.S3.Version),
 		Statement: returnS3Sts,
 	}
-	newPolicies := &policiesDataModel{
+	newPolicies := &PoliciesModel{
 		Management: returnMgmtPolicies,
 		S3:         returnS3Policy,
 	}
@@ -384,7 +384,7 @@ func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest,
 
 func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
-	var state groupsDataSourceDataModel
+	var state GroupsDataSourceModel
 	var returnBody groupsDataSourceGolangModelSingle
 	var returnS3Sts []*S3PolicyStatementDataModel
 	diags := req.State.Get(ctx, &state)
@@ -459,7 +459,7 @@ func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, res
 		Version:   types.StringValue(returnBody.Data.Policies.S3.Version),
 		Statement: returnS3Sts,
 	}
-	newPolicies := &policiesDataModel{
+	newPolicies := &PoliciesModel{
 		Management: returnMgmtPolicies,
 		S3:         returnS3Policy,
 	}
@@ -475,8 +475,8 @@ func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var state groupsDataSourceDataModel
-	var plan groupsDataSourceDataModel
+	var state GroupsDataSourceModel
+	var plan GroupsDataSourceModel
 	var returnBody groupsDataSourceGolangModelSingle
 	var s3Sts []GroupPostPolicyStatement
 	var returnS3Sts []*S3PolicyStatementDataModel
@@ -621,7 +621,7 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 		Version:   types.StringValue(returnBody.Data.Policies.S3.Version),
 		Statement: returnS3Sts,
 	}
-	newPolicies := &policiesDataModel{
+	newPolicies := &PoliciesModel{
 		Management: returnMgmtPolicies,
 		S3:         returnS3Policy,
 	}
@@ -633,7 +633,7 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 }
 
 func (r *groupsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state groupsDataSourceDataModel
+	var state GroupsDataSourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

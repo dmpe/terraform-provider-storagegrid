@@ -35,7 +35,7 @@ func (d *s3UserIDSpecificAccessKeyDataSource) Metadata(ctx context.Context, req 
 func (d *s3UserIDSpecificAccessKeyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Access specific S3 Access key for the specific user - a data source",
+		MarkdownDescription: "Access specific S3 access key for a user - a data source",
 		Attributes: map[string]schema.Attribute{
 			"user_uuid": schema.StringAttribute{
 				Required: true,

@@ -1,28 +1,25 @@
-.PHONY: fmt lint test testacc test_s3_groups test_crud_group test_user_import test_group_import test_crud_user test_groups test_envs generate install_apt install_dnf
+.PHONY: fmt lint test testacc docker test_s3_groups test_crud_group test_user_import test_group_import test_crud_user test_groups test_envs generate install_dnf
 
 # Careful -> no empty string at the end of line
 .EXPORT_ALL_VARIABLES:
 GOBIN=/home/bin/
-TF_CLI_CONFIG_FILE=.terraformrc
+TF_CLI_CONFIG_FILE=/home/.terraformrc
 TF_LOG=debug
 TF_ACC=1
 
+export PATH := /root/go/bin/:$(PATH)
 
-install_apt:
-	apt install -y golang
-	go install -v golang.org/x/tools/gopls@latest
-	go install -v golang.org/x/tools/cmd/goimports@latest
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-
+docker: 
+	docker build -f Dockerfile -t storagegrid_dev:latest .
 
 install_dnf:
 	dnf install -y golang
 	go install -v golang.org/x/tools/gopls@latest
 	go install -v golang.org/x/tools/cmd/goimports@latest
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
 
-lint:
-	golangci-lint run
+lint: fmt
+	golangci-lint run internal/provider
 
 build: 
 	go mod tidy; go install .
