@@ -3,12 +3,12 @@
 page_title: "storagegrid_group Data Source - storagegrid"
 subcategory: ""
 description: |-
-  group data source
+  Fetch a specific group - a data source
 ---
 
 # storagegrid_group (Data Source)
 
-group data source
+Fetch a specific group - a data source
 
 
 

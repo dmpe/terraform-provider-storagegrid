@@ -3,12 +3,12 @@
 page_title: "storagegrid_s3_user_id_all_keys Data Source - storagegrid"
 subcategory: ""
 description: |-
-  Access all S3 Access key for the specific user - a data source
+  Access all S3 access keys for an user - a data source
 ---
 
 # storagegrid_s3_user_id_all_keys (Data Source)
 
-Access all S3 Access key for the specific user - a data source
+Access all S3 access keys for an user - a data source
 
 
 

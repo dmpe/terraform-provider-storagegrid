@@ -3,12 +3,12 @@
 page_title: "storagegrid_s3_access_key Resource - storagegrid"
 subcategory: ""
 description: |-
-  Create S3 Access + secret keys for the specific user - a resource
+  Create S3 access and secret key pair for an user - a resource
 ---
 
 # storagegrid_s3_access_key (Resource)
 
-Create S3 Access + secret keys for the specific user - a resource
+Create S3 access and secret key pair for an user - a resource
 
 
 
