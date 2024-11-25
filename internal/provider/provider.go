@@ -231,6 +231,7 @@ func (p *storagegridProvider) Resources(ctx context.Context) []func() resource.R
 	return []func() resource.Resource{
 		NewGroupsResource,
 		NewUsersResource,
+		NewS3AccessSecretKeyCurrentUserResource,
 		NewS3AccessSecretKeyResource,
 	}
 }

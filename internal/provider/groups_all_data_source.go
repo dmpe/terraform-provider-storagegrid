@@ -75,19 +75,27 @@ func (d *groupsDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 									Computed: true,
 									Attributes: map[string]schema.Attribute{
 										"manage_all_containers": schema.BoolAttribute{
-											Computed: true,
+											Computed:    true,
+											Description: "Allows users to change settings of all S3 buckets (or Swift containers) in this account. Supersedes the View all buckets permission. Applies to the Tenant Manager UI and API only and does not affect the permissions granted by an S3 group policy.",
 										},
 										"manage_endpoints": schema.BoolAttribute{
-											Computed: true,
+											Computed:    true,
+											Description: "Allows users to configure endpoints for platform services.",
 										},
 										"manage_own_container_objects": schema.BoolAttribute{
 											Computed: true,
 										},
 										"manage_own_s3_credentials": schema.BoolAttribute{
-											Computed: true,
+											Computed:    true,
+											Description: "Allows users to create and delete their own S3 access keys.",
+										},
+										"view_all_containers": schema.BoolAttribute{
+											Computed:    true,
+											Description: "Allows users to view settings of all S3 buckets (or Swift containers) in this account. Superseded by the Manage all buckets permission. Applies to the Tenant Manager UI and API only and does not affect the permissions granted by an S3 group policy.",
 										},
 										"root_access": schema.BoolAttribute{
-											Computed: true,
+											Computed:    true,
+											Description: "Allows users to access all administration features. Root access permission supersedes all other permissions.",
 										},
 									},
 								},
@@ -225,6 +233,7 @@ func (d *groupsDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			ManageEndpoints:           types.BoolValue(item.Policies.Management.ManageEndpoints),
 			ManageOwnContainerObjects: types.BoolValue(item.Policies.Management.ManageOwnContainerObjects),
 			ManageOwnS3Credentials:    types.BoolValue(item.Policies.Management.ManageOwnS3Credentials),
+			ViewAllContainers:         types.BoolValue(item.Policies.Management.ViewAllContainers),
 			RootAccess:                types.BoolValue(item.Policies.Management.RootAccess),
 		}
 		for _, s3Pol := range item.Policies.S3.Statement {

@@ -80,14 +80,23 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			},
 			"display_name": schema.StringAttribute{
 				Required: true,
+				Validators: []validator.String{
+					// Must contain at least 1 and no more than 32 characters
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(32),
+				},
 			},
 			"unique_name": schema.StringAttribute{
 				Required: true,
+				Description: `The unique name for a group, which cannot be changed. 
+For federated group, the unique name comes from the identity source. The value to specify depends on the type of identity source in use:
+Active Directory: Use the sAMAccountName attribute.
+OpenLDAP: Use the CN (Common Name).
+Other LDAP: Identify the appropriate unique name value for the LDAP server.`,
 			},
 			"management_read_only": schema.BoolAttribute{
-				MarkdownDescription: "Select whether users can change settings and perform operations or whether they can only view settings and features.",
-				Description:         "Select whether users can change settings and perform operations or whether they can only view settings and features.",
-				Required:            true,
+				Description: "Select whether users can change settings and perform operations or whether they can only view settings and features.",
+				Required:    true,
 			},
 			"policies": schema.SingleNestedAttribute{
 				Required: true,
@@ -96,21 +105,28 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 						Required: true,
 						Attributes: map[string]schema.Attribute{
 							"manage_all_containers": schema.BoolAttribute{
-								Optional: true,
+								Optional:    true,
+								Description: "Allows users to change settings of all S3 buckets (or Swift containers) in this account. Supersedes the View all buckets permission. Applies to the Tenant Manager UI and API only and does not affect the permissions granted by an S3 group policy.",
 							},
 							"manage_endpoints": schema.BoolAttribute{
-								Optional: true,
+								Optional:    true,
+								Description: "Allows users to configure endpoints for platform services.",
 							},
 							"manage_own_container_objects": schema.BoolAttribute{
-								Optional: true,
+								Optional:    true,
+								Description: "When combined with the View all buckets or Manage all buckets permission, allows users to view and manage objects from the S3 Console tab on the details page for a bucket.",
 							},
 							"manage_own_s3_credentials": schema.BoolAttribute{
-								Optional: true,
+								Optional:    true,
+								Description: "Allows users to create and delete their own S3 access keys.",
+							},
+							"view_all_containers": schema.BoolAttribute{
+								Optional:    true,
+								Description: "Allows users to view settings of all S3 buckets (or Swift containers) in this account. Superseded by the Manage all buckets permission. Applies to the Tenant Manager UI and API only and does not affect the permissions granted by an S3 group policy.",
 							},
 							"root_access": schema.BoolAttribute{
-								MarkdownDescription: "Allows users to access all administration features. Root access permission supersedes all other permissions.",
-								Description:         "Allows users to access all administration features. Root access permission supersedes all other permissions.",
-								Optional:            true,
+								Description: "Allows users to access all administration features. Root access permission supersedes all other permissions.",
+								Optional:    true,
 							},
 						},
 					},
@@ -331,6 +347,7 @@ func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest,
 		ManageEndpoints:           types.BoolValue(returnBody.Data.Policies.Management.ManageEndpoints),
 		ManageOwnContainerObjects: types.BoolValue(returnBody.Data.Policies.Management.ManageOwnContainerObjects),
 		ManageOwnS3Credentials:    types.BoolValue(returnBody.Data.Policies.Management.ManageOwnS3Credentials),
+		ViewAllContainers:         types.BoolValue(returnBody.Data.Policies.Management.ViewAllContainers),
 		RootAccess:                types.BoolValue(returnBody.Data.Policies.Management.RootAccess),
 	}
 	for _, returnS3Pol := range returnBody.Data.Policies.S3.Statement {
@@ -423,6 +440,7 @@ func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, res
 		ManageEndpoints:           types.BoolValue(returnBody.Data.Policies.Management.ManageEndpoints),
 		ManageOwnContainerObjects: types.BoolValue(returnBody.Data.Policies.Management.ManageOwnContainerObjects),
 		ManageOwnS3Credentials:    types.BoolValue(returnBody.Data.Policies.Management.ManageOwnS3Credentials),
+		ViewAllContainers:         types.BoolValue(returnBody.Data.Policies.Management.ViewAllContainers),
 		RootAccess:                types.BoolValue(returnBody.Data.Policies.Management.RootAccess),
 	}
 	for _, returnS3Pol := range returnBody.Data.Policies.S3.Statement {
@@ -500,6 +518,7 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 		ManageEndpoints:           plan.Policies.Management.ManageEndpoints.ValueBool(),
 		ManageOwnContainerObjects: plan.Policies.Management.ManageOwnContainerObjects.ValueBool(),
 		ManageOwnS3Credentials:    plan.Policies.Management.ManageOwnS3Credentials.ValueBool(),
+		ViewAllContainers:         plan.Policies.Management.ViewAllContainers.ValueBool(),
 		RootAccess:                plan.Policies.Management.RootAccess.ValueBool(),
 	}
 
@@ -585,6 +604,7 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 		ManageEndpoints:           types.BoolValue(returnBody.Data.Policies.Management.ManageEndpoints),
 		ManageOwnContainerObjects: types.BoolValue(returnBody.Data.Policies.Management.ManageOwnContainerObjects),
 		ManageOwnS3Credentials:    types.BoolValue(returnBody.Data.Policies.Management.ManageOwnS3Credentials),
+		ViewAllContainers:         types.BoolValue(returnBody.Data.Policies.Management.ViewAllContainers),
 		RootAccess:                types.BoolValue(returnBody.Data.Policies.Management.RootAccess),
 	}
 	for _, returnS3Pol := range returnBody.Data.Policies.S3.Statement {

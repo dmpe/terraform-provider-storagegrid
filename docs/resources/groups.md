@@ -20,7 +20,11 @@ Create new group - a resource
 - `display_name` (String)
 - `management_read_only` (Boolean) Select whether users can change settings and perform operations or whether they can only view settings and features.
 - `policies` (Attributes) (see [below for nested schema](#nestedatt--policies))
-- `unique_name` (String)
+- `unique_name` (String) The unique name for a group, which cannot be changed. 
+For federated group, the unique name comes from the identity source. The value to specify depends on the type of identity source in use:
+Active Directory: Use the sAMAccountName attribute.
+OpenLDAP: Use the CN (Common Name).
+Other LDAP: Identify the appropriate unique name value for the LDAP server.
 
 ### Optional
 
@@ -45,11 +49,12 @@ Required:
 
 Optional:
 
-- `manage_all_containers` (Boolean)
-- `manage_endpoints` (Boolean)
-- `manage_own_container_objects` (Boolean)
-- `manage_own_s3_credentials` (Boolean)
+- `manage_all_containers` (Boolean) Allows users to change settings of all S3 buckets (or Swift containers) in this account. Supersedes the View all buckets permission. Applies to the Tenant Manager UI and API only and does not affect the permissions granted by an S3 group policy.
+- `manage_endpoints` (Boolean) Allows users to configure endpoints for platform services.
+- `manage_own_container_objects` (Boolean) When combined with the View all buckets or Manage all buckets permission, allows users to view and manage objects from the S3 Console tab on the details page for a bucket.
+- `manage_own_s3_credentials` (Boolean) Allows users to create and delete their own S3 access keys.
 - `root_access` (Boolean) Allows users to access all administration features. Root access permission supersedes all other permissions.
+- `view_all_containers` (Boolean) Allows users to view settings of all S3 buckets (or Swift containers) in this account. Superseded by the Manage all buckets permission. Applies to the Tenant Manager UI and API only and does not affect the permissions granted by an S3 group policy.
 
 
 <a id="nestedatt--policies--s3"></a>
