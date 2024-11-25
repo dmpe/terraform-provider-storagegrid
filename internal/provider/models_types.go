@@ -63,6 +63,7 @@ type ManagementPolicyDataModel struct {
 	ManageEndpoints           types.Bool `tfsdk:"manage_endpoints"`
 	ManageOwnContainerObjects types.Bool `tfsdk:"manage_own_container_objects"`
 	ManageOwnS3Credentials    types.Bool `tfsdk:"manage_own_s3_credentials"`
+	ViewAllContainers         types.Bool `tfsdk:"view_all_containers"`
 	RootAccess                types.Bool `tfsdk:"root_access"`
 }
 
@@ -147,6 +148,7 @@ type ManagementPolicy struct {
 	ManageEndpoints           bool `json:"manageEndpoints"`
 	ManageOwnContainerObjects bool `json:"manageOwnContainerObjects"`
 	ManageOwnS3Credentials    bool `json:"manageOwnS3Credentials"`
+	ViewAllContainers         bool `json:"viewAllContainers"`
 	RootAccess                bool `json:"rootAccess"`
 }
 

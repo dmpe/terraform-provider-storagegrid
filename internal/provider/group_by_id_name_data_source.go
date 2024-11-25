@@ -81,16 +81,23 @@ func (d *groupDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 								Computed: true,
 							},
 							"manage_endpoints": schema.BoolAttribute{
-								Computed: true,
+								Computed:    true,
+								Description: "Allows users to configure endpoints for platform services.",
 							},
 							"manage_own_container_objects": schema.BoolAttribute{
 								Computed: true,
 							},
 							"manage_own_s3_credentials": schema.BoolAttribute{
-								Computed: true,
+								Computed:    true,
+								Description: "Allows users to create and delete their own S3 access keys.",
+							},
+							"view_all_containers": schema.BoolAttribute{
+								Computed:    true,
+								Description: "Allows users to view settings of all S3 buckets (or Swift containers) in this account. Superseded by the Manage all buckets permission. Applies to the Tenant Manager UI and API only and does not affect the permissions granted by an S3 group policy.",
 							},
 							"root_access": schema.BoolAttribute{
-								Computed: true,
+								Computed:    true,
+								Description: "Allows users to access all administration features. Root access permission supersedes all other permissions.",
 							},
 						},
 					},
@@ -237,6 +244,7 @@ func (d *groupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		ManageEndpoints:           types.BoolValue(jsonData.Data.Policies.Management.ManageEndpoints),
 		ManageOwnContainerObjects: types.BoolValue(jsonData.Data.Policies.Management.ManageOwnContainerObjects),
 		ManageOwnS3Credentials:    types.BoolValue(jsonData.Data.Policies.Management.ManageOwnS3Credentials),
+		ViewAllContainers:         types.BoolValue(jsonData.Data.Policies.Management.ViewAllContainers),
 		RootAccess:                types.BoolValue(jsonData.Data.Policies.Management.RootAccess),
 	}
 	for _, s3Pol := range jsonData.Data.Policies.S3.Statement {

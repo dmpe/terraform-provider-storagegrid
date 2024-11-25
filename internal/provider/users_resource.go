@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -44,10 +46,16 @@ func (r *usersResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 		MarkdownDescription: "Create a new user - a resource",
 		Attributes: map[string]schema.Attribute{
 			unique_name: schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The name this user will use to sign in. Usernames must be unique and cannot be changed.",
 			},
 			fl_name: schema.StringAttribute{
 				Required: true,
+				Validators: []validator.String{
+					// Must contain at least 1 and no more than 128 characters
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(128),
+				},
 			},
 			"disable": schema.BoolAttribute{
 				MarkdownDescription: "Do you want to prevent this user from signing in regardless of assigned group permissions?",

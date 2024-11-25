@@ -19,7 +19,7 @@ Create a new user - a resource
 
 - `full_name` (String)
 - `member_of` (List of String)
-- `unique_name` (String)
+- `unique_name` (String) The name this user will use to sign in. Usernames must be unique and cannot be changed.
 
 ### Optional
 
