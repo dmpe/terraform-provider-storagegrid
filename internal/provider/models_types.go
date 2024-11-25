@@ -38,22 +38,22 @@ type S3GridClientReturnJson struct {
 /*
 These are for GET/POST Groups related data sources and resources
 */
-type groupsDataSourceModel struct {
-	Data []*groupsDataSourceDataModel `tfsdk:"data"`
+type GroupsDataSourceDataModel struct {
+	Data []*GroupsDataSourceModel `tfsdk:"data"`
 }
 
-type groupsDataSourceDataModel struct {
-	ID                 types.String       `tfsdk:"id"`
-	AccountID          types.String       `tfsdk:"account_id"`
-	DisplayName        types.String       `tfsdk:"display_name"`
-	UniqueName         types.String       `tfsdk:"unique_name"`
-	GroupURN           types.String       `tfsdk:"group_urn"`
-	Federated          types.Bool         `tfsdk:"federated"`
-	ManagementReadOnly types.Bool         `tfsdk:"management_read_only"`
-	Policies           *policiesDataModel `tfsdk:"policies"`
+type GroupsDataSourceModel struct {
+	ID                 types.String   `tfsdk:"id"`
+	AccountID          types.String   `tfsdk:"account_id"`
+	DisplayName        types.String   `tfsdk:"display_name"`
+	UniqueName         types.String   `tfsdk:"unique_name"`
+	GroupURN           types.String   `tfsdk:"group_urn"`
+	Federated          types.Bool     `tfsdk:"federated"`
+	ManagementReadOnly types.Bool     `tfsdk:"management_read_only"`
+	Policies           *PoliciesModel `tfsdk:"policies"`
 }
 
-type policiesDataModel struct {
+type PoliciesModel struct {
 	Management *ManagementPolicyDataModel `tfsdk:"management"`
 	S3         *S3PolicyDataModel         `tfsdk:"s3"`
 }
@@ -185,11 +185,8 @@ type groupsDataSourceGolangModelSingle struct {
 }
 
 /*
-
 These are for creating new group (as part of resources)
-
 */
-
 type GroupPostPolicies struct {
 	Management ManagementPolicy `json:"management"`
 	S3         S3PostPolicy     `json:"s3"`
@@ -264,7 +261,6 @@ type usersDataSourceDataModel struct {
 /*
 These are for creating or fetching S3 access/secret keys
 */
-
 type UserIDS3AccessKeys struct {
 	Data []S3AccessKey `json:"data"`
 }

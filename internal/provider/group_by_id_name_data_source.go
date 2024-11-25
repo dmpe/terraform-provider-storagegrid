@@ -36,7 +36,7 @@ func (d *groupDataSource) Metadata(ctx context.Context, req datasource.MetadataR
 func (d *groupDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "group data source",
+		MarkdownDescription: "Fetch a specific group - a data source",
 		Attributes: map[string]schema.Attribute{
 			id: schema.StringAttribute{
 				Optional: true,
@@ -97,7 +97,7 @@ func (d *groupDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 					"s3": schema.SingleNestedAttribute{
 						Computed: true,
 						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
+							id: schema.StringAttribute{
 								Optional:            true,
 								Computed:            true,
 								Description:         "S3 Policy ID provided by policy generator tools (currently not used)",
@@ -106,7 +106,7 @@ func (d *groupDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 							"statement": schema.ListNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
-										"action": schema.ListAttribute{
+										act: schema.ListAttribute{
 											ElementType:         types.StringType,
 											Optional:            true,
 											Computed:            true,
@@ -125,21 +125,21 @@ func (d *groupDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 												),
 											},
 										},
-										"not_action": schema.ListAttribute{
+										n_act: schema.ListAttribute{
 											ElementType:         types.StringType,
 											Optional:            true,
 											Computed:            true,
 											Description:         "the specific exceptional actions (Can be a string if only one element. A statement must have either Action or NotAction.)",
 											MarkdownDescription: "the specific exceptional actions (Can be a string if only one element. A statement must have either Action or NotAction.)",
 										},
-										"not_resource": schema.ListAttribute{
+										n_res: schema.ListAttribute{
 											ElementType:         types.StringType,
 											Optional:            true,
 											Computed:            true,
 											Description:         "the objects that the statement does not cover (Can be a string if only one element. A statement must have either Resource or NotResource.)",
 											MarkdownDescription: "the objects that the statement does not cover (Can be a string if only one element. A statement must have either Resource or NotResource.)",
 										},
-										"resource": schema.ListAttribute{
+										res: schema.ListAttribute{
 											ElementType:         types.StringType,
 											Optional:            true,
 											Computed:            true,
@@ -193,7 +193,7 @@ func (d *groupDataSource) Configure(ctx context.Context, req datasource.Configur
 }
 
 func (d *groupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state groupsDataSourceDataModel
+	var state GroupsDataSourceModel
 	var jsonData groupsDataSourceGolangModelSingle
 	var s3Sts []*S3PolicyStatementDataModel
 	var idType types.String
@@ -274,7 +274,7 @@ func (d *groupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		Statement: s3Sts,
 	}
 
-	groupDataSingle := &groupsDataSourceDataModel{
+	groupDataSingle := &GroupsDataSourceModel{
 		ID:                 types.StringValue(jsonData.Data.ID),
 		AccountID:          types.StringValue(jsonData.Data.AccountID),
 		DisplayName:        types.StringValue(jsonData.Data.DisplayName),
@@ -282,7 +282,7 @@ func (d *groupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		GroupURN:           types.StringValue(jsonData.Data.GroupURN),
 		Federated:          types.BoolValue(jsonData.Data.Federated),
 		ManagementReadOnly: types.BoolValue(jsonData.Data.ManagementReadOnly),
-		Policies: &policiesDataModel{
+		Policies: &PoliciesModel{
 			Management: mgmtPolicies,
 			S3:         s3Policy,
 		},

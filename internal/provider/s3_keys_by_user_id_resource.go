@@ -40,7 +40,7 @@ func (r *s3AccessSecretKeyResource) Schema(ctx context.Context, req resource.Sch
 
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
-		MarkdownDescription: "Create S3 Access + secret keys for the specific user - a resource",
+		MarkdownDescription: "Create S3 access and secret key pair for an user - a resource",
 		Attributes: map[string]schema.Attribute{
 			"user_uuid": schema.StringAttribute{
 				Required: true,

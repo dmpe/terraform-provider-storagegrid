@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-// NewTokenClient creates common settings
+// NewTokenClient creates common HTTP client object for calling REST API
 func NewTokenClient(url string, bearerToken string, insecure bool) *S3GridClient {
 	gridClient := &S3GridClient{
 		address:    url,
@@ -25,7 +25,7 @@ func NewTokenClient(url string, bearerToken string, insecure bool) *S3GridClient
 	return gridClient
 }
 
-// NewUsernamePasswordClient creates common settings
+// NewUsernamePasswordClient is used to create final Bearer Token
 func NewUsernamePasswordClient(url string, username string, password string, tenant string, insecure bool) *S3GridClient {
 	gridClient := &S3GridClient{
 		address:    url,
@@ -39,7 +39,7 @@ func NewUsernamePasswordClient(url string, username string, password string, ten
 	return gridClient
 }
 
-// SendRequest send a http request
+// SendRequest send a http request to create Bearer Token
 func (c *S3GridClient) SendAuthorizeRequest(statusCode int) (tokenValue string, respCode int, err error) {
 	var jsonD S3GridClientReturnJson
 
@@ -100,10 +100,11 @@ func (c *S3GridClient) SendAuthorizeRequest(statusCode int) (tokenValue string, 
 		return "", resp.StatusCode, fmt.Errorf("[ERROR] unexpected status code got: %v expected: %v \n %v", statusCode, resp.StatusCode, statusCode)
 	}
 
+	// returns JSON body - see provider.go
 	return jsonD.Data, resp.StatusCode, nil
 }
 
-// SendRequest send a http request
+// SendRequest send a http request, with bearer token appended
 func (c *S3GridClient) SendRequest(method string, path string, payload interface{}, statusCode int) (value []byte, respheaders string, respCode int, err error) {
 	address := c.address + api_suffix + path
 	bearer := "Bearer " + c.token
@@ -128,7 +129,7 @@ func (c *S3GridClient) SendRequest(method string, path string, payload interface
 		return nil, "", 0, err
 	}
 
-	// Use access token authentification if bearer Token is specified
+	// Use access token authentication if bearer token is specified
 	if c.token != "" {
 		req.Header.Add("Authorization", bearer)
 	}
@@ -151,6 +152,7 @@ func (c *S3GridClient) SendRequest(method string, path string, payload interface
 	resp.Body.Close()
 	strbody := string(body)
 	respHeaders := resp.Header
+
 	headers, err := json.Marshal(respHeaders)
 	if err != nil {
 		return nil, "", resp.StatusCode, err
@@ -160,5 +162,6 @@ func (c *S3GridClient) SendRequest(method string, path string, payload interface
 		return nil, "", resp.StatusCode, fmt.Errorf("[ERROR] unexpected status code got: %v expected: %v \n %v", resp.StatusCode, statusCode, strbody)
 	}
 
+	// body is of type bytes
 	return body, string(headers), resp.StatusCode, nil
 }

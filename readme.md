@@ -1,8 +1,8 @@
-# Terraform Provider for NetApp StorageGrid S3
+# Terraform Provider for NetApp StorageGRID S3
 
-This is a terraform provider plugin for [NetApp StorageGrid S3](https://www.netapp.com/data-storage/storagegrid/) system.
+This is a terraform provider plugin for [NetApp StorageGRID S3](https://www.netapp.com/data-storage/storagegrid/) system.
 
-It has been tested & validated to work against [11.7 version](https://docs.netapp.com/us-en/storagegrid-117/).
+Version `v1.0.0` has been tested & validated to work against [11.7 version](https://docs.netapp.com/us-en/storagegrid-117/).
 
 # Very important information
 
@@ -10,12 +10,12 @@ It has been tested & validated to work against [11.7 version](https://docs.netap
 
 There are many differences.
 
-Among them, the most important given the access to the real-life NetApp StorageGrid, 
+Among them, the most important given the access to the real-life NetApp StorageGRID, 
 are Terraform **tests**. These make sure that this Terraform plugin has been tested and works actually.
 
 Unfortunately, there are far from ideal state and cannot be published completely - at this very moment - in this repository.
 
-For instance, they have dependancies to internal Vault system, and have other issues such as hardcoded URLs, etc.
+For instance, they have dependencies to internal Vault system, and have other issues such as hardcoded URLs, etc.
 
 At such, only a selected number of them is published, without a guarantee that they (will) work when executing them.
 
@@ -37,9 +37,8 @@ Configuring [required providers](https://www.terraform.io/docs/language/provider
 
 ```terraform
 terraform {
-  required_version = ">= 1.0.0"
   required_providers {
-    elasticstack = {
+    storagegrid = {
       source  = "dmpe/storagegrid"
       version = "" # My strong advice - always pin this provider's version!
     }
@@ -50,7 +49,7 @@ terraform {
 
 ### Authentication
 
-The StorageGrid provider offers 2 different ways of providing credentials for authentication.
+The StorageGRID provider offers 2 different ways of providing credentials for authentication.
 
 The following methods are supported:
 
@@ -63,7 +62,7 @@ The following methods are supported:
 Default static credentials can be provided by adding the `tenant`, `username`, 
 `password` and `address` in the provider block:
 
-Only `insecure` is optional (default is `false`). It could be used when using self-signed certificates on your StorageGrid system.
+Only `insecure` is optional (default is `false`). It could be used when using self-signed certificates on your StorageGRID system.
 
 ```terraform
 provider "storagegrid" {
@@ -95,38 +94,59 @@ provider "storagegrid" {
 
 # Developer Contributions and Documentation
 
-Contributions are always welcome. 
+## How to develop this provider
 
-Workflow is simple: 
-1. Fork it
-2. Push your changes to some branch, and create Pull Request. 
+Contributions are always welcome! In order to develop this provider your system needs:
+
+- `make`
+- `golang`
+- `terraform` for running real life tests
+
+The GitHub workflow is very simple: 
+
+1. Fork this repo.
+2. Push your changes to some branch, and create Pull Request against this repo. 
 3. Then either ping me or assign me for review.
 
 Please, make sure that your changes either:
 
 - a) include tests (in `golang`, `terraform` or `terraform-in-golang`, etc.) OR
-- b) your confirmation that if you cannot publish your tests, your changes have been tested with real StorageGrid system.
+- b) your confirmation that if you cannot publish your tests, your changes have been tested with real StorageGRID system.
 
 
 ## Some additional information: 
 
-- I followed this guideline on creating new plugin: <https://developer.hashicorp.com/terraform/plugin/code-generation/workflow-example>
-- We use only the modern [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework). Not SDKv2.
+- I followed this guideline fow how to create new provider: <https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework>.
+- We use only the modern [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework) SDK. 
+Not the `SDKv2` and support for it (whatever the reason) will not be accepted.
+- An early attempt was done with [Code Generation](https://developer.hashicorp.com/terraform/plugin/code-generation) approach, but I have failed to 
+overcome several issues with StorageGRID REST API (=json file) without doing manual changes to the Swagger API.
 
 
 ## Code repository structure
 
-- Resource and data sources are located in `internal/provider/`.
-- Generated documentation is in `docs/`.
-- All tests are in `tests` folder. Golang tests are currently not being developed, i.e. validation is done with Terraform examples.
-- `tools` contains some additional functionality such as adding file headers (copywrite) or code for generating documentation. Additionally, in `tools/rest-api`, it contains Swagger/OpenAPI export for specific StorageGrid version. 
-- In `root` we find:
+- `Resources` and `data sources` are located in `internal/provider/`.
+- Generated documentation is in `docs/`. Trigger it by `make generate`.
+- All tests are in `tests` folder. Golang tests are currently not being developed, i.e. validation is done with real life Terraform examples.
+- `tools` folder contains some additional functionality such as adding file headers (`copywrite`) or code for aforementioned generation of documentation. 
+Additionally, in `tools/rest-api`, it contains Swagger/OpenAPI export for specific StorageGRID version(s). 
+- In `root` we can find:
+  - `.terraformrc` file which is used for local development. You may not need it. But you will, if your tests will include other Terraform providers (such as my internal tests that use HashiCorp Vault etc.)
   - `makefile` which essentially governs developing this provider. Execute as 
 
   ```
   make install_dnf
   make lint
   make fmt
+  make build
   ```
-  - `.terraformRC` file which is used for local development.
 
+The repo also contains `Dockerfile` which can be build using `make docker`. 
+After that you simply use inside the container different `make` commands like this:
+
+```bash
+docker run -it -v $(pwd):/home storagegrid_dev:latest
+$ make build
+$ make lint
+....
+```
