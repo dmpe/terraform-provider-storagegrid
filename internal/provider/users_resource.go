@@ -51,6 +51,7 @@ func (r *usersResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			},
 			fl_name: schema.StringAttribute{
 				Required: true,
+				Description: "The human-readable name for the User (required for local Users and imported automatically for federated Users)",
 				Validators: []validator.String{
 					// Must contain at least 1 and no more than 128 characters
 					stringvalidator.LengthAtLeast(1),
@@ -65,10 +66,12 @@ func (r *usersResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			},
 			"member_of": schema.ListAttribute{
 				ElementType: types.StringType,
+				Description: "Group memberships for this User (required for local Users and imported automatically for federated Users)",
 				Required:    true,
 			},
 			"federated": schema.BoolAttribute{
 				Computed: true,
+				Description: "True if the User is federated, for example, an LDAP User",
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
