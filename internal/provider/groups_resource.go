@@ -53,6 +53,7 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"group_urn": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
+				Description: "Contains the Group uniqueName and Account ID (generated automatically)",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -63,6 +64,7 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
+				Description: "True if the Group is federated, for example, an LDAP Group",
 			},
 			id: schema.StringAttribute{
 				Optional: true,
