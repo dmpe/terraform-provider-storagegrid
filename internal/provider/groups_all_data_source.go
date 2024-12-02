@@ -60,11 +60,11 @@ func (d *groupsDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 							Computed: true,
 						},
 						"group_urn": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
 							Description: "Contains the Group uniqueName and Account ID (generated automatically)",
 						},
 						"federated": schema.BoolAttribute{
-							Computed: true,
+							Computed:    true,
 							Description: "True if the Group is federated, for example, an LDAP Group",
 						},
 						"management_read_only": schema.BoolAttribute{
@@ -85,7 +85,7 @@ func (d *groupsDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 											Description: "Allows users to configure endpoints for platform services.",
 										},
 										"manage_own_container_objects": schema.BoolAttribute{
-											Computed: true,
+											Computed:    true,
 											Description: "Ability to use S3 Console to view and manage bucket objects",
 										},
 										"manage_own_s3_credentials": schema.BoolAttribute{

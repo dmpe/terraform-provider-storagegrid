@@ -29,8 +29,8 @@ Other LDAP: Identify the appropriate unique name value for the LDAP server.
 ### Optional
 
 - `account_id` (String)
-- `federated` (Boolean)
-- `group_urn` (String)
+- `federated` (Boolean) True if the Group is federated, for example, an LDAP Group
+- `group_urn` (String) Contains the Group uniqueName and Account ID (generated automatically)
 
 ### Read-Only
 
