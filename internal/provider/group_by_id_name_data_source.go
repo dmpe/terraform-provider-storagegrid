@@ -78,7 +78,7 @@ func (d *groupDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 						Computed: true,
 						Attributes: map[string]schema.Attribute{
 							"manage_all_containers": schema.BoolAttribute{
-								Computed: true,
+								Computed:    true,
 								Description: "Ability to manage all S3 buckets or Swift containers for this tenant account (overrides permission settings in group or bucket policies). Supersedes the viewAllContainers permission",
 							},
 							"manage_endpoints": schema.BoolAttribute{
@@ -86,7 +86,7 @@ func (d *groupDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 								Description: "Allows users to configure endpoints for platform services.",
 							},
 							"manage_own_container_objects": schema.BoolAttribute{
-								Computed: true,
+								Computed:    true,
 								Description: "Ability to use S3 Console to view and manage bucket objects",
 							},
 							"manage_own_s3_credentials": schema.BoolAttribute{

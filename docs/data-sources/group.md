@@ -69,9 +69,9 @@ Read-Only:
 
 Read-Only:
 
-- `manage_all_containers` (Boolean)
+- `manage_all_containers` (Boolean) Ability to manage all S3 buckets or Swift containers for this tenant account (overrides permission settings in group or bucket policies). Supersedes the viewAllContainers permission
 - `manage_endpoints` (Boolean) Allows users to configure endpoints for platform services.
-- `manage_own_container_objects` (Boolean)
+- `manage_own_container_objects` (Boolean) Ability to use S3 Console to view and manage bucket objects
 - `manage_own_s3_credentials` (Boolean) Allows users to create and delete their own S3 access keys.
 - `root_access` (Boolean) Allows users to access all administration features. Root access permission supersedes all other permissions.
 - `view_all_containers` (Boolean) Allows users to view settings of all S3 buckets (or Swift containers) in this account. Superseded by the Manage all buckets permission. Applies to the Tenant Manager UI and API only and does not affect the permissions granted by an S3 group policy.

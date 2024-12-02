@@ -17,8 +17,8 @@ Create a new user - a resource
 
 ### Required
 
-- `full_name` (String)
-- `member_of` (List of String)
+- `full_name` (String) The human-readable name for the User (required for local Users and imported automatically for federated Users)
+- `member_of` (List of String) Group memberships for this User (required for local Users and imported automatically for federated Users)
 - `unique_name` (String) The name this user will use to sign in. Usernames must be unique and cannot be changed.
 
 ### Optional
@@ -28,6 +28,6 @@ Create a new user - a resource
 ### Read-Only
 
 - `account_id` (String)
-- `federated` (Boolean)
+- `federated` (Boolean) True if the User is federated, for example, an LDAP User
 - `id` (String) The ID of this resource.
 - `user_urn` (String)

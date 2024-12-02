@@ -31,8 +31,8 @@ Read-Only:
 
 - `account_id` (String)
 - `display_name` (String)
-- `federated` (Boolean)
-- `group_urn` (String)
+- `federated` (Boolean) True if the Group is federated, for example, an LDAP Group
+- `group_urn` (String) Contains the Group uniqueName and Account ID (generated automatically)
 - `id` (String)
 - `management_read_only` (Boolean)
 - `policies` (Attributes) (see [below for nested schema](#nestedatt--data--policies))
@@ -53,7 +53,7 @@ Read-Only:
 
 - `manage_all_containers` (Boolean) Allows users to change settings of all S3 buckets (or Swift containers) in this account. Supersedes the View all buckets permission. Applies to the Tenant Manager UI and API only and does not affect the permissions granted by an S3 group policy.
 - `manage_endpoints` (Boolean) Allows users to configure endpoints for platform services.
-- `manage_own_container_objects` (Boolean)
+- `manage_own_container_objects` (Boolean) Ability to use S3 Console to view and manage bucket objects
 - `manage_own_s3_credentials` (Boolean) Allows users to create and delete their own S3 access keys.
 - `root_access` (Boolean) Allows users to access all administration features. Root access permission supersedes all other permissions.
 - `view_all_containers` (Boolean) Allows users to view settings of all S3 buckets (or Swift containers) in this account. Superseded by the Manage all buckets permission. Applies to the Tenant Manager UI and API only and does not affect the permissions granted by an S3 group policy.

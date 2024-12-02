@@ -51,8 +51,8 @@ func (r *groupsResource) Schema(ctx context.Context, req resource.SchemaRequest,
 		MarkdownDescription: "Create new group - a resource",
 		Attributes: map[string]schema.Attribute{
 			"group_urn": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:    true,
+				Computed:    true,
 				Description: "Contains the Group uniqueName and Account ID (generated automatically)",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),

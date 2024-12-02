@@ -43,28 +43,28 @@ func (r *s3AccessSecretKeyResource) Schema(ctx context.Context, req resource.Sch
 		MarkdownDescription: "Create S3 access and secret key pair for an user - a resource",
 		Attributes: map[string]schema.Attribute{
 			"user_uuid": schema.StringAttribute{
-				Required: true,
+				Required:    true,
 				Description: "ID that uniquely identifies the user",
 			},
 			"expires": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Optional:    true,
+				Computed:    true,
 				Description: "The time after which the key pair will no longer be valid. Null means the key pair never expires.",
 			},
 			"id": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
 				Description: "A unique identifier for the S3 credential pair (automatically assigned when an access key is created)",
 			},
 			"account_id": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
 				Description: "Storage Tenant Account ID",
 			},
 			"display_name": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
 				Description: "Obfuscated access key",
 			},
 			"user_urn": schema.StringAttribute{
-				Computed: true,
+				Computed:    true,
 				Description: "Contains the user name and account ID (generated automatically)",
 			},
 			"access_key": schema.StringAttribute{

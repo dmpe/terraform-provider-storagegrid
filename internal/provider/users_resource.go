@@ -50,7 +50,7 @@ func (r *usersResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Description: "The name this user will use to sign in. Usernames must be unique and cannot be changed.",
 			},
 			fl_name: schema.StringAttribute{
-				Required: true,
+				Required:    true,
 				Description: "The human-readable name for the User (required for local Users and imported automatically for federated Users)",
 				Validators: []validator.String{
 					// Must contain at least 1 and no more than 128 characters
@@ -70,7 +70,7 @@ func (r *usersResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Required:    true,
 			},
 			"federated": schema.BoolAttribute{
-				Computed: true,
+				Computed:    true,
 				Description: "True if the User is federated, for example, an LDAP User",
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),

@@ -17,17 +17,17 @@ Create S3 access and secret key pair for an user - a resource
 
 ### Required
 
-- `user_uuid` (String)
+- `user_uuid` (String) ID that uniquely identifies the user
 
 ### Optional
 
-- `expires` (String)
+- `expires` (String) The time after which the key pair will no longer be valid. Null means the key pair never expires.
 
 ### Read-Only
 
-- `access_key` (String)
-- `account_id` (String)
-- `display_name` (String)
-- `id` (String) The ID of this resource.
-- `secret_access_key` (String)
-- `user_urn` (String)
+- `access_key` (String) generated automatically (returned only when generated and otherwise omitted)
+- `account_id` (String) Storage Tenant Account ID
+- `display_name` (String) Obfuscated access key
+- `id` (String) A unique identifier for the S3 credential pair (automatically assigned when an access key is created)
+- `secret_access_key` (String) generated automatically (returned only when generated and otherwise omitted)
+- `user_urn` (String) Contains the user name and account ID (generated automatically)
