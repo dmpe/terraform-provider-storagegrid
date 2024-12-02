@@ -2,28 +2,9 @@
 
 This is a terraform provider plugin for [NetApp StorageGRID S3](https://www.netapp.com/data-storage/storagegrid/) system.
 
-Version `v1.0.0` has been tested & validated to work against [11.7 version](https://docs.netapp.com/us-en/storagegrid-117/).
+Version `v1.0.0` has been tested & validated to work against [11.8 version](https://docs.netapp.com/us-en/storagegrid-118/).
 
-# Very important information
-
-:warning: There exist 2 git repositories. One is hosted internally and another (this) one is public.
-
-There are many differences.
-
-Among them, the most important given the access to the real-life NetApp StorageGRID, 
-are Terraform **tests**. These make sure that this Terraform plugin has been tested and works actually.
-
-Unfortunately, there are far from ideal state and cannot be published completely - at this very moment - in this repository.
-
-For instance, they have dependencies to internal Vault system, and have other issues such as hardcoded URLs, etc.
-
-At such, only a selected number of them is published, without a guarantee that they (will) work when executing them.
-
-# How does sync between internal and this public repo work?
-
-There is no automatic sync'ing available. Any updates are first reviewed and only then pushed to GitHub manually.
-
-# What is working and what is not working?
+## What is working and what is not working?
 
 This provider aims to cover selected **Tenant** [REST API endpoints such](https://docs.netapp.com/us-en/storagegrid/tenant/understanding-tenant-management-api.html) `users`, `groups` or `s3` (which creates access/secret keys). 
 
@@ -46,7 +27,6 @@ terraform {
 }
 ```
 
-
 ### Authentication
 
 The StorageGRID provider offers 2 different ways of providing credentials for authentication.
@@ -55,7 +35,6 @@ The following methods are supported:
 
 * Static credentials
 * Environment variables
-
 
 #### Static credentials
 
@@ -66,7 +45,7 @@ Only `insecure` is optional (default is `false`). It could be used when using se
 
 ```terraform
 provider "storagegrid" {
-  address   = "https://grid.firm.com:9443/api/v3"
+  address   = "https://grid.firm.com:9443"
   username  = "grid"
   password  = "change_me"
   tenant    = "<int>" # Tenant ID
@@ -102,10 +81,10 @@ Contributions are always welcome! In order to develop this provider your system 
 - `golang`
 - `terraform` for running real life tests
 
-The GitHub workflow is very simple: 
+The GitHub workflow is very simple:
 
 1. Fork this repo.
-2. Push your changes to some branch, and create Pull Request against this repo. 
+2. Push your changes to some branch, and create Pull Request against this repo.
 3. Then either ping me or assign me for review.
 
 Please, make sure that your changes either:
@@ -113,14 +92,13 @@ Please, make sure that your changes either:
 - a) include tests (in `golang`, `terraform` or `terraform-in-golang`, etc.) OR
 - b) your confirmation that if you cannot publish your tests, your changes have been tested with real StorageGRID system.
 
-
-## Some additional information: 
+## Some additional information:
 
 - I followed this guideline fow how to create new provider: <https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework>.
-- We use only the modern [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework) SDK. 
+- We use only the modern [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework) SDK.
 Not the `SDKv2` and support for it (whatever the reason) will not be accepted.
-- An early attempt was done with [Code Generation](https://developer.hashicorp.com/terraform/plugin/code-generation) approach, but I have failed to 
-overcome several issues with StorageGRID REST API (=json file) without doing manual changes to the Swagger API.
+- An early attempt was done with [Code Generation](https://developer.hashicorp.com/terraform/plugin/code-generation) approach, but I
+have failed to overcome several issues with StorageGRID REST API (=json file) without doing manual changes to the Swagger API.
 
 
 ## Code repository structure
@@ -134,7 +112,7 @@ Additionally, in `tools/rest-api`, it contains Swagger/OpenAPI export for specif
   - `.terraformrc` file which is used for local development. You may not need it. But you will, if your tests will include other Terraform providers (such as my internal tests that use HashiCorp Vault etc.)
   - `makefile` which essentially governs developing this provider. Execute as 
 
-  ```
+  ```bash
   make install_dnf
   make lint
   make fmt
