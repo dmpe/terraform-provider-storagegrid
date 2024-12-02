@@ -1,3 +1,9 @@
+## 1.2.0
+
+FEATURES:
+
+- Add more examples in the documentation and further expand it
+
 ## 1.1.0
 
 FEATURES:
