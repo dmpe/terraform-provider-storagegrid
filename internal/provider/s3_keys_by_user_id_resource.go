@@ -214,7 +214,7 @@ func (r *s3AccessSecretKeyResource) Update(ctx context.Context, req resource.Upd
 }
 
 func (r *s3AccessSecretKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state UserIDS3AccessSecretKeysModel
+	var state S3AccessKeyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -222,7 +222,7 @@ func (r *s3AccessSecretKeyResource) Delete(ctx context.Context, req resource.Del
 	}
 
 	// in order for us to delete it, we first need to retrieve user id and access key
-	_, _, _, err := r.client.SendRequest("DELETE", api_users+"/"+state.UserUUID.ValueString()+api_s3_suffix+"/"+state.Data.AccessKey.ValueString(), nil, 204)
+	_, _, _, err := r.client.SendRequest("DELETE", api_users+"/"+state.UserUUID.ValueString()+api_s3_suffix+"/"+state.AccessKey.ValueString(), nil, 204)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting StorageGrid access keys",
