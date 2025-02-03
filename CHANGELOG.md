@@ -1,3 +1,10 @@
+## 1.3.0
+
+Bug Fix:
+
+- An attempt to fix [this issue](https://github.com/dmpe/terraform-provider-storagegrid/issues/9) as reported by @bajo. Thanks.
+
+
 ## 1.2.0
 
 FEATURES:
