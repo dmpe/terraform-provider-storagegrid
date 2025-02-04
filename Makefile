@@ -90,3 +90,10 @@ test_user_import :
 	# terraform -chdir=tests/terraform/crud_users state rm storagegrid_users.new-local-user;\
 	terraform -chdir=tests/terraform/crud_users import storagegrid_users.new-local-user b0789794-8aab-4308-985b-55ea4987e91b
 
+github9:
+	rm -rf bin/terraform-provider-storagegrid
+	go mod tidy; go install .;\
+	terraform -chdir=tests/terraform/github_issue9 init;\
+	terraform -chdir=tests/terraform/github_issue9 plan -var-file=terraform.tfvars;\
+	terraform -chdir=tests/terraform/github_issue9 apply -var-file=terraform.tfvars -auto-approve;\
+	terraform -chdir=tests/terraform/github_issue9 destroy -auto-approve
