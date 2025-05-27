@@ -1,27 +1,34 @@
-# Copyright (c) github.com/dmpe
-# SPDX-License-Identifier: MIT
 version: "2"
-# Visit https://golangci-lint.run/ for usage documentation
-# and information on other useful linters
-issues:
-  max-same-issues: 0
-
 linters:
   enable:
-    - durationcheck
-    - errcheck
     - copyloopvar
+    - durationcheck
     - forcetypeassert
-    - gofmt
-    - gosimple
-    - ineffassign
     - makezero
     - misspell
     - nilerr
     - predeclared
-    - staticcheck
-    - tenv
     - unconvert
     - unparam
-    - unused
-    - govet
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
