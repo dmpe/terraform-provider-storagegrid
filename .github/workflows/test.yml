@@ -28,11 +28,11 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - run: go mod download
-      - run: go build -v .
-      - name: Run linters
+      - run: go build ./...
+      - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: latest
+          version: v2.1
 
   generate:
     runs-on: ubuntu-latest
