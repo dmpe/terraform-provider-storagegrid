@@ -110,10 +110,16 @@ func (c *S3GridClient) SendRequest(method string, path string, payload interface
 	bearer := "Bearer " + c.token
 	client := &http.Client{}
 
-	b := new(bytes.Buffer)
-	err = json.NewEncoder(b).Encode(payload)
-	if err != nil {
-		return nil, "", 0, err
+	var bodyReader io.Reader = nil
+
+	// Only encode payload if it's not nil
+	if payload != nil {
+		b := new(bytes.Buffer)
+		err = json.NewEncoder(b).Encode(payload)
+		if err != nil {
+			return nil, "", 0, err
+		}
+		bodyReader = b
 	}
 
 	if c.insecure {
@@ -124,7 +130,7 @@ func (c *S3GridClient) SendRequest(method string, path string, payload interface
 		client = &http.Client{Transport: tr}
 	}
 
-	req, err := http.NewRequest(method, address, b)
+	req, err := http.NewRequest(method, address, bodyReader)
 	if err != nil {
 		return nil, "", 0, err
 	}
