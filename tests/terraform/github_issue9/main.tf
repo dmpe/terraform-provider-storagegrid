@@ -1,3 +1,6 @@
+# Copyright (c) github.com/dmpe
+# SPDX-License-Identifier: MIT
+
 terraform {
   required_providers {
     storagegrid = {
