@@ -7,6 +7,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -413,8 +415,13 @@ func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	tflog.Debug(ctx, "1. Get refreshed group information.")
-	respBody, _, _, err := r.client.SendRequest("GET", api_groups+"/"+state.ID.ValueString(), nil, 200)
+	respBody, _, respCode, err := r.client.SendRequest("GET", api_groups+"/"+state.ID.ValueString(), nil, 200)
 	if err != nil {
+		if respCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error Reading StorageGrid Group",
 			"Could not read StorageGrid group ID "+state.ID.ValueString()+": "+err.Error(),
@@ -577,8 +584,13 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	tflog.Debug(ctx, "3. Get refreshed group information.")
-	respBody, _, _, err := r.client.SendRequest("GET", api_groups+"/"+groupID, nil, 200)
+	respBody, _, respCode, err := r.client.SendRequest("GET", api_groups+"/"+groupID, nil, 200)
 	if err != nil {
+		if respCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error Reading StorageGrid Group",
 			"Could not read StorageGrid group ID "+groupID+": "+err.Error(),

@@ -7,6 +7,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -113,7 +115,7 @@ func (r *s3AccessSecretKeyCurrentUserResource) Create(ctx context.Context, req r
 	tflog.Debug(ctx, "1. Create to json body and fill it with the passed variables.")
 
 	body := &UserIDS3AccessSecretKeysCreateJson{
-		Expires: expiresConfig.ValueString(),
+		Expires: expiresConfig.ValueStringPointer(),
 	}
 
 	tflog.Debug(ctx, "2. Execute Request against REST api.")
@@ -161,8 +163,13 @@ func (r *s3AccessSecretKeyCurrentUserResource) Read(ctx context.Context, req res
 	}
 
 	tflog.Debug(ctx, "1. Get refreshed access key information.")
-	respBody, _, _, err := r.client.SendRequest("GET", api_users+"/current-user"+api_s3_suffix+"/"+state.AccessKey.ValueString(), nil, 200)
+	respBody, _, respCode, err := r.client.SendRequest("GET", api_users+"/current-user"+api_s3_suffix+"/"+state.AccessKey.ValueString(), nil, 200)
 	if err != nil {
+		if respCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+		
 		resp.Diagnostics.AddError(
 			"Error Reading StorageGrid access key",
 			"Could not read StorageGrid access key "+state.AccessKey.ValueString()+": "+err.Error(),
