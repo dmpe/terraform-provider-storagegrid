@@ -6,8 +6,9 @@ package provider
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"net/http"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 /*
@@ -296,7 +297,7 @@ type S3AccessSecretKey struct {
 }
 
 type UserIDS3AccessSecretKeysCreateJson struct {
-	Expires string `json:"expires"`
+	Expires *string `json:"expires"`
 }
 
 type UserIDS3AllKeysModel struct {
