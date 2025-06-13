@@ -169,7 +169,7 @@ func (r *s3AccessSecretKeyCurrentUserResource) Read(ctx context.Context, req res
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		
+
 		resp.Diagnostics.AddError(
 			"Error Reading StorageGrid access key",
 			"Could not read StorageGrid access key "+state.AccessKey.ValueString()+": "+err.Error(),

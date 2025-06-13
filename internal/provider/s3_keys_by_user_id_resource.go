@@ -124,7 +124,7 @@ func (r *s3AccessSecretKeyResource) Create(ctx context.Context, req resource.Cre
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("expires"), &expiresConfig)...)
 	tflog.Debug(ctx, "1. Create to json body and fill it with the passed variables.")
 
-	var body *UserIDS3AccessSecretKeysCreateJson = nil
+	var body *UserIDS3AccessSecretKeysCreateJson
 
 	if expiresConfig.ValueString() == "" {
 		body = &UserIDS3AccessSecretKeysCreateJson{
@@ -187,7 +187,7 @@ func (r *s3AccessSecretKeyResource) Read(ctx context.Context, req resource.ReadR
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		
+
 		resp.Diagnostics.AddError(
 			"Error Reading StorageGrid access key",
 			"Could not read StorageGrid access key "+state.AccessKey.ValueString()+": "+err.Error(),
