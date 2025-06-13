@@ -7,6 +7,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -187,8 +189,13 @@ func (r *usersResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	tflog.Debug(ctx, "1. Get refreshed user information.")
-	respBody, _, _, err := r.client.SendRequest("GET", api_users+"/"+state.ID.ValueString(), nil, 200)
+	respBody, _, respCode, err := r.client.SendRequest("GET", api_users+"/"+state.ID.ValueString(), nil, 200)
 	if err != nil {
+		if respCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error Reading StorageGrid user",
 			"Could not read StorageGrid user ID "+state.ID.ValueString()+": "+err.Error(),
@@ -267,8 +274,13 @@ func (r *usersResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	tflog.Debug(ctx, "3. Get refreshed user information.")
-	respBody, _, _, err := r.client.SendRequest("GET", api_users+"/"+userID, nil, 200)
+	respBody, _, respCode, err := r.client.SendRequest("GET", api_users+"/"+userID, nil, 200)
 	if err != nil {
+		if respCode == http.StatusNotFound {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error Reading StorageGrid user",
 			"Could not read StorageGrid user ID "+userID+": "+err.Error(),
