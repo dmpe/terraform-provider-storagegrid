@@ -51,26 +51,22 @@ func (p *storagegridProvider) Schema(ctx context.Context, req provider.SchemaReq
 			"address": schema.StringAttribute{
 				Description: "The address of StorageGrid system. FQDN with port number, if some non-standard is used.\n" +
 					"Must be without `/` at the end and without `api/v3` suffix which is added automatically.",
-				Optional:  false,
-				Required:  true,
+				Optional:  true,
 				Sensitive: false,
 			},
 			"username": schema.StringAttribute{
 				Description: "StorageGrid (tenant) local or federated username.",
 				Optional:    true,
-				Required:    true,
 				Sensitive:   false,
 			},
 			"password": schema.StringAttribute{
 				Description: "StorageGrid (tenant) password.",
 				Optional:    true,
-				Required:    true,
 				Sensitive:   true,
 			},
 			"tenant": schema.StringAttribute{
 				Description: "Provide tenant ID.",
 				Optional:    true,
-				Required:    true,
 				Sensitive:   false,
 			},
 			"enable_trace_context": schema.BoolAttribute{
