@@ -5,6 +5,8 @@ package provider
 
 import (
 	"context"
+	"os"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -13,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"os"
 )
 
 // Ensure storagegridProvider satisfies various provider interfaces.
@@ -50,7 +51,7 @@ func (p *storagegridProvider) Schema(ctx context.Context, req provider.SchemaReq
 		Attributes: map[string]schema.Attribute{
 			"address": schema.StringAttribute{
 				Description: "The address of StorageGrid system. FQDN with port number, if some non-standard is used.\n" +
-					"Must be without `/` at the end and without `api/v3` suffix which is added automatically.",
+					"Must be without `/` at the end and without `api/v4` suffix which is added automatically.",
 				Optional:  true,
 				Sensitive: false,
 			},

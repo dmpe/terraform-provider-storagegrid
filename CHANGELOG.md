@@ -1,3 +1,10 @@
+## 1.6.0
+
+Bug Fix:
+
+- Fix [this issue](https://github.com/dmpe/terraform-provider-storagegrid/pull/19) as reported by @jorijn. Thanks.
+- Update documentation a bit.
+
 ## 1.5.0
 
 Bug Fix:
