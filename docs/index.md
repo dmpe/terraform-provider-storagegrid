@@ -57,7 +57,7 @@ provider "storagegrid" {
 ### Optional
 
 - `address` (String) The address of StorageGrid system. FQDN with port number, if some non-standard is used.
-Must be without `/` at the end and without `api/v3` suffix which is added automatically.
+Must be without `/` at the end and without `api/v4` suffix which is added automatically.
 - `enable_trace_context` (Boolean) Enable trace context. If `true` a `Traceparent` header will be added to the request. Default: `false`
 - `insecure` (Boolean) Use insecure HTTP connection. Setting this to `true` will ignore certificates when calling REST API. Default: `false`
 - `password` (String, Sensitive) StorageGrid (tenant) password.
