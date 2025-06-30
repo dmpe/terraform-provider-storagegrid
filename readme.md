@@ -4,6 +4,13 @@ This is a terraform provider plugin for [NetApp StorageGRID S3](https://www.neta
 
 Version `v1.0.0` has been tested & validated to work against [11.8 version](https://docs.netapp.com/us-en/storagegrid-118/).
 
+**Update Summer 2025**:
+I no longer work at the company which has access to the StorageGrid system. 
+As a result, I am no longer able to conduct any tests and rely on contributors to 1) find and 2) fix any issues. 
+
+That does __NOT__ mean that this provider is abandoned and will not be updated anymore. 
+If fact, if a PR is opened, I will be happy to review + release a new version ASAP.
+
 ## What is working and what is not working?
 
 This provider aims to cover selected **Tenant** [REST API endpoints such](https://docs.netapp.com/us-en/storagegrid/tenant/understanding-tenant-management-api.html) `users`, `groups` or `s3` (which creates access/secret keys). 
@@ -41,7 +48,7 @@ The following methods are supported:
 Default static credentials can be provided by adding the `tenant`, `username`, 
 `password` and `address` in the provider block:
 
-Only `insecure` is optional (default is `false`). It could be used when using self-signed certificates on your StorageGRID system.
+`insecure` can be used when using self-signed certificates on your StorageGRID system.
 
 ```terraform
 provider "storagegrid" {
@@ -55,7 +62,8 @@ provider "storagegrid" {
 
 #### Environment Variables
 
-You can provide your credentials for the default connection via the `STORAGEGRID_ADDRESS`, `STORAGEGRID_USERNAME`, `STORAGEGRID_PASSWORD`, `STORAGEGRID_TENANT` environmental variables. 
+You can also provide your credentials for the default connection via the `STORAGEGRID_ADDRESS`, 
+`STORAGEGRID_USERNAME`, `STORAGEGRID_PASSWORD`, `STORAGEGRID_TENANT` environmental variables. 
 
 Make sure that you export them properly, like this:
 
@@ -65,6 +73,8 @@ export STORAGEGRID_USERNAME=
 export STORAGEGRID_PASSWORD=
 export STORAGEGRID_TENANT=
 ```
+
+and then use:
 
 ```terraform
 provider "storagegrid" {
