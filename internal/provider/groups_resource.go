@@ -276,6 +276,7 @@ func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest,
 		ManageEndpoints:           plan.Policies.Management.ManageEndpoints.ValueBool(),
 		ManageOwnContainerObjects: plan.Policies.Management.ManageOwnContainerObjects.ValueBool(),
 		ManageOwnS3Credentials:    plan.Policies.Management.ManageOwnS3Credentials.ValueBool(),
+		ViewAllContainers:         types.BoolValue(returnBody.Data.Policies.Management.ViewAllContainers),
 		RootAccess:                plan.Policies.Management.RootAccess.ValueBool(),
 	}
 
