@@ -9,6 +9,7 @@ const (
 	api_s3_suffix = "/s3-access-keys"
 	api_suffix    = "/api/v4"
 	api_users     = "/org/users"
+	api_buckets   = "/org/containers"
 	act           = "action"
 	n_act         = "not_action"
 	n_res         = "not_resource"
