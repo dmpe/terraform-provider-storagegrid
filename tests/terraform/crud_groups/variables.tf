@@ -1,5 +1,5 @@
 # Copyright (c) github.com/dmpe
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: MIT
 
 variable "grid_username" {
   description = "Grid username"
