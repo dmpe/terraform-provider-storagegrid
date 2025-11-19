@@ -1,3 +1,11 @@
+## 1.8.0
+
+Feature:
+- Add support for [buckets](https://github.com/dmpe/terraform-provider-storagegrid/issues/28) as reported by @cmdaltent. Thanks.
+
+Bug fix:
+- Update dependencies.
+
 ## 1.7.0
 
 Bug Fix:
