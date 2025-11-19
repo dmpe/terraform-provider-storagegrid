@@ -226,6 +226,7 @@ func (p *storagegridProvider) Configure(ctx context.Context, req provider.Config
 
 func (p *storagegridProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		NewBucketResource,
 		NewGroupsResource,
 		NewUsersResource,
 		NewS3AccessSecretKeyCurrentUserResource,
@@ -235,6 +236,7 @@ func (p *storagegridProvider) Resources(ctx context.Context) []func() resource.R
 
 func (p *storagegridProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		NewBucketDataSource,
 		NewGroupsDataSource,
 		NewGroupDataSource,
 		NewUsersDataSource,

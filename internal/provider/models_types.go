@@ -336,3 +336,23 @@ type S3AccessKeyResourceModel struct {
 	AccessKey       types.String `tfsdk:"access_key"`
 	SecretAccessKey types.String `tfsdk:"secret_access_key"`
 }
+
+type BucketResourceModel struct {
+	Name   types.String `tfsdk:"name"`
+	Region types.String `tfsdk:"region"`
+}
+
+func (m *BucketResourceModel) ToBucketModel() BucketApiRequestModel {
+	return BucketApiRequestModel{
+		Name:   m.Name.ValueString(),
+		Region: m.Region.ValueString(),
+	}
+}
+
+type BucketApiRequestModel struct {
+	Name   string `json:"name"`
+	Region string `json:"region"`
+}
+type BucketApiResponseModel struct {
+	Data BucketApiRequestModel `json:"data"`
+}
