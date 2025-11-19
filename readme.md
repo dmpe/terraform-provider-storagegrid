@@ -13,7 +13,7 @@ If fact, if a PR is opened, I will be happy to review + release a new version AS
 
 ## What is working and what is not working?
 
-This provider aims to cover selected **Tenant** [REST API endpoints such](https://docs.netapp.com/us-en/storagegrid/tenant/understanding-tenant-management-api.html) `users`, `groups` or `s3` (which creates access/secret keys). 
+This provider aims to cover selected **Tenant** [REST API endpoints such](https://docs.netapp.com/us-en/storagegrid/tenant/understanding-tenant-management-api.html) `users`, `groups`, `buckets` or `s3` (which creates access/secret keys). 
 
 This provider does not currently support any [Grid Management API endpoints](https://docs.netapp.com/us-en/storagegrid/admin/grid-management-api-operations.html) which can be found in the Grid Management view.
 
