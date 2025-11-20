@@ -23,7 +23,7 @@ variable "grid_url" {
 
 variable "example_bucket" {
   type = object({
-    name = string
+    name   = string
     region = string
   })
   description = "Name and region of the example buckets to be created for testing."
