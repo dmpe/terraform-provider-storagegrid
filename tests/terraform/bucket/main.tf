@@ -19,6 +19,26 @@ resource "storagegrid_bucket" "example_default_region" {
   name = "${var.example_bucket.name}-default-region"
 }
 
+resource "storagegrid_bucket" "example_compliance_object_lock" {
+  name   = "${var.example_bucket.name}-compliance-object-lock"
+  region = var.example_bucket.region
+
+  object_lock_configuration {
+    mode = "compliance"
+    days = 30
+  }
+}
+
+resource "storagegrid_bucket" "example_governance_object_lock" {
+  name   = "${var.example_bucket.name}-governance-object-lock"
+  region = var.example_bucket.region
+
+  object_lock_configuration {
+    mode = "governance"
+    days = 30
+  }
+}
+
 import {
   id = var.import_bucket.name
   to = storagegrid_bucket.imported
