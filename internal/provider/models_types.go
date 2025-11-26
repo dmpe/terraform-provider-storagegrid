@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -344,7 +343,7 @@ type BucketResourceModel struct {
 	ObjectLockConfiguration *ObjectLockConfiguration `tfsdk:"object_lock_configuration"`
 }
 
-func (m *BucketResourceModel) ToBucketModel() (BucketApiRequestModel, diag.Diagnostics) {
+func (m *BucketResourceModel) ToBucketModel() BucketApiRequestModel {
 	var objectLockConfiguration *S3ObjectLock
 	if olcObj := m.ObjectLockConfiguration; olcObj != nil {
 		objectLockConfiguration = &S3ObjectLock{
@@ -361,7 +360,7 @@ func (m *BucketResourceModel) ToBucketModel() (BucketApiRequestModel, diag.Diagn
 		Name:         m.Name.ValueString(),
 		Region:       m.Region.ValueString(),
 		S3ObjectLock: objectLockConfiguration,
-	}, nil
+	}
 }
 
 // ObjectLockConfiguration is the representation of the bucket's s3 object lock configuration in the state.

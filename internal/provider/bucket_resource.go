@@ -5,11 +5,8 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -19,8 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider-defined types fully satisfy framework interfaces.
@@ -38,7 +33,7 @@ func NewBucketResource() resource.Resource {
 
 // bucketResource defines the resource implementation.
 type bucketResource struct {
-	client *S3GridClient
+	client *BucketClient
 }
 
 func (r *bucketResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -120,12 +115,11 @@ func (r *bucketResource) Configure(_ context.Context, req resource.ConfigureRequ
 		return
 	}
 
-	r.client = client
+	r.client = NewBucketClient(client)
 }
 
 func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan BucketResourceModel
-	var returnBody BucketApiResponseModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -133,36 +127,14 @@ func (r *bucketResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	payload, diags := plan.ToBucketModel()
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
-
-	httpResp, _, _, err := r.client.SendRequest("POST", api_buckets, payload, 201)
+	read, err := r.client.Create(ctx, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create StorageGrid container, got error: %s", err.Error()))
+		resp.Diagnostics.AddError("Error Creating StorageGrid container", err.Error())
 		return
 	}
-
-	if err := json.Unmarshal(httpResp, &returnBody); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err.Error()))
-		return
-	}
-
-	// if no region is provided, we need to read the resource to get the used default region.
-	read, err := r.read(ctx, returnBody.Data.Name)
-	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read newly created bucket, got error: %s", err.Error()))
-		return
-	}
-
-	// Write logs using the tflog package
-	// Documentation: https://terraform.io/plugin/log
-	tflog.Trace(ctx, "created a new bucket")
 
 	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &read)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, read)...)
 }
 
 func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -174,7 +146,7 @@ func (r *bucketResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	bucket, err := r.read(ctx, state.Name.ValueString())
+	bucket, err := r.client.Read(ctx, state.Name.ValueString())
 	if err != nil {
 		if errors.Is(err, ErrBucketNotFound) {
 			resp.State.RemoveResource(ctx)
@@ -203,32 +175,13 @@ func (r *bucketResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	if (plan.ObjectLockConfiguration != nil && state.ObjectLockConfiguration == nil) || (plan.ObjectLockConfiguration == nil && state.ObjectLockConfiguration != nil) {
-		resp.Diagnostics.AddError("Error Updating StorageGrid container", "Object Lock Configuration cannot be changed once set.")
-		return
-	}
-
-	payload, diags := plan.ToBucketModel()
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
-
-	if payload.S3ObjectLock == nil {
-		return
-	}
-
-	_, _, _, err := r.client.SendRequest("PUT", fmt.Sprintf("%s/%s/object-lock", api_buckets, state.Name.ValueString()), payload.S3ObjectLock, 200)
+	updated, err := r.client.Update(ctx, plan, state)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Updating StorageGrid container", fmt.Sprintf("Unable to update StorageGrid container, got error: %s", err.Error()))
+		return
 	}
 
-	updatedObjectLockConfiguration, err := r.readObjectLockConfiguration(ctx, state.Name.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Error Updating StorageGrid container", fmt.Sprintf("Unable to read updated StorageGrid container, got error: %s", err.Error()))
-	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &BucketResourceModel{Name: state.Name, Region: state.Region, ObjectLockConfiguration: updatedObjectLockConfiguration})...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, updated)...)
 }
 
 func (r *bucketResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -238,17 +191,17 @@ func (r *bucketResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	if _, _, _, err := r.client.SendRequest("DELETE", api_buckets+"/"+state.Name.ValueString(), nil, 204); err != nil {
+	if err := r.client.Delete(state.Name.ValueString()); err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting StorageGrid container",
-			"Could not delete bucket, unexpected error: "+err.Error(),
+			fmt.Sprintf("Could not delete bucket, unexpected error: %s", err.Error()),
 		)
 		return
 	}
 }
 
 func (r *bucketResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	state, err := r.read(ctx, req.ID)
+	state, err := r.client.Read(ctx, req.ID)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Importing StorageGrid container", err.Error())
 		return
@@ -257,6 +210,8 @@ func (r *bucketResource) ImportState(ctx context.Context, req resource.ImportSta
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
+// ValidateConfig validates the configuration for the resource.
+// It ensures either years or days are set for the `object_lock_configuration` block, but not both, and also not none.
 func (r *bucketResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var config BucketResourceModel
 	if diags := req.Config.Get(ctx, &config); diags.HasError() {
@@ -277,131 +232,4 @@ func (r *bucketResource) ValidateConfig(ctx context.Context, req resource.Valida
 		)
 		return
 	}
-}
-
-func (r *bucketResource) read(ctx context.Context, bucketName string) (*BucketResourceModel, error) {
-	// Read region and object lock configuration in parallel.
-	type regionResult struct {
-		val *string
-		err error
-	}
-	type olcResult struct {
-		val *ObjectLockConfiguration
-		err error
-	}
-
-	regCh := make(chan regionResult, 1)
-	olcCh := make(chan olcResult, 1)
-
-	go func() {
-		v, err := r.readRegion(ctx, bucketName)
-		regCh <- regionResult{val: v, err: err}
-	}()
-
-	go func() {
-		v, err := r.readObjectLockConfiguration(ctx, bucketName)
-		olcCh <- olcResult{val: v, err: err}
-	}()
-
-	reg := <-regCh
-	olc := <-olcCh
-
-	combinedErrs := errors.Join(reg.err, olc.err)
-	if combinedErrs != nil {
-		return nil, combinedErrs
-	}
-
-	return &BucketResourceModel{
-		Name:                    types.StringValue(bucketName),
-		Region:                  types.StringValue(*reg.val),
-		ObjectLockConfiguration: olc.val,
-	}, nil
-}
-
-func (r *bucketResource) readRegion(ctx context.Context, bucketName string) (*string, error) {
-	tflog.Debug(ctx, "1. Get refreshed bucket information.")
-	endpoint := fmt.Sprintf("%s/%s/region", api_buckets, bucketName)
-	respBody, _, respCode, err := r.client.SendRequest("GET", endpoint, nil, 200)
-	if err != nil {
-		if respCode == http.StatusNotFound {
-			return nil, ErrBucketNotFound
-		}
-		return nil, &GenericError{Summary: "Error Reading StorageGrid container", Details: "Could not read StorageGrid container name " + bucketName + ": " + err.Error()}
-	}
-
-	type regionDataModel struct {
-		Region string `json:"region"`
-	}
-
-	type regionReadModel struct {
-		Data regionDataModel `json:"data"`
-	}
-
-	var returnBody regionReadModel
-
-	tflog.Debug(ctx, "2. Unmarshal bucket information to JSON body.")
-	if err := json.Unmarshal(respBody, &returnBody); err != nil {
-		return nil, &GenericError{Summary: "Client Error", Details: "Unable to parse region response, got error: " + err.Error()}
-	}
-
-	return &returnBody.Data.Region, nil
-}
-
-func (r *bucketResource) readObjectLockConfiguration(ctx context.Context, bucketName string) (*ObjectLockConfiguration, error) {
-	tflog.Debug(ctx, "1. Get refreshed bucket information.")
-	endpoint := fmt.Sprintf("%s/%s/object-lock", api_buckets, bucketName)
-	respBody, _, respCode, err := r.client.SendRequest("GET", endpoint, nil, 200)
-	if err != nil {
-		if respCode == http.StatusNotFound {
-			return nil, ErrBucketNotFound
-		}
-	}
-
-	type retentionSettings struct {
-		Mode  string  `json:"mode"`
-		Days  *string `json:"days,omitempty"`
-		Years *string `json:"years,omitempty"`
-	}
-
-	type s3ObjectLock struct {
-		Enabled           bool              `json:"enabled"`
-		RetentionSettings retentionSettings `json:"defaultRetentionSetting"`
-	}
-
-	type objectLockConfigurationReadModel struct {
-		Data s3ObjectLock `json:"data"`
-	}
-
-	var returnBody objectLockConfigurationReadModel
-
-	tflog.Debug(ctx, "2. Unmarshal bucket information to JSON body.")
-	if err := json.Unmarshal(respBody, &returnBody); err != nil {
-		return nil, &GenericError{Summary: "Client Error", Details: "Unable to parse object lock configuration response, got error: " + err.Error()}
-	}
-
-	if !returnBody.Data.Enabled {
-		return nil, nil
-	}
-
-	objectLockConfiguration := ObjectLockConfiguration{
-		Mode: types.StringValue(returnBody.Data.RetentionSettings.Mode),
-	}
-
-	if strDays := returnBody.Data.RetentionSettings.Days; strDays != nil && *strDays != "" {
-		days, err := strconv.Atoi(*strDays)
-		if err != nil {
-			return nil, &GenericError{Summary: "Client Error", Details: "Unable to parse object lock configuration's retention days, got error: " + err.Error()}
-		}
-		objectLockConfiguration.Days = types.Int64Value(int64(days))
-	}
-
-	if strYears := returnBody.Data.RetentionSettings.Years; strYears != nil && *strYears != "" {
-		years, err := strconv.Atoi(*strYears)
-		if err != nil {
-			return nil, &GenericError{Summary: "Client Error", Details: "Unable to parse object lock configuration's retention years, got error: " + err.Error()}
-		}
-		objectLockConfiguration.Years = types.Int64Value(int64(years))
-	}
-
-	return &objectLockConfiguration, nil
 }
