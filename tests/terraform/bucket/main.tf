@@ -39,6 +39,13 @@ resource "storagegrid_bucket" "example_governance_object_lock" {
   }
 }
 
+// Versioning is enabled by default if an `object_lock_configuration` is set on the bucket.
+// Creating a `storagegrid_bucket_versioning` resource with status "Enabled" is possible nonetheless.
+resource "storagegrid_bucket_versioning" "example_governance_object_lock" {
+  bucket_name = storagegrid_bucket.example_governance_object_lock.name
+  status      = "Enabled"
+}
+
 import {
   id = var.import_bucket.name
   to = storagegrid_bucket.imported
@@ -97,6 +104,9 @@ resource "storagegrid_bucket_versioning" "suspended" {
   status = "Suspended"
 }
 
+// Specifying a `bucket_versioning` resource with status "Disabled" is allowed here since we actually import the
+// resource.
+// Otherwise, an API error would be generated.
 resource "storagegrid_bucket_versioning" "disabled_import" {
   bucket_name = var.import_bucket.name
 
