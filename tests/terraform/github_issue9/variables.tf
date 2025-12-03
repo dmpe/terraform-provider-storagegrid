@@ -19,8 +19,8 @@ variable "grid_tenant_iid" {
 variable "groups" {
   description = "List of groups to create"
   type = list(object({
-    unique_name  = string
-    display_name = string
+    unique_name          = string
+    display_name         = string
     management_read_only = optional(bool, true)
     management_policies = object({
       manage_all_containers        = bool
@@ -31,12 +31,12 @@ variable "groups" {
       view_all_containers          = bool
     })
     s3 = object({
-        statement = list(object({
-          sid      = string
-          effect   = string
-          action   = list(string)
-          resource = list(string)
-        }))
+      statement = list(object({
+        sid      = string
+        effect   = string
+        action   = list(string)
+        resource = list(string)
+      }))
     })
   }))
 }
@@ -47,8 +47,8 @@ variable "users" {
     unique_name = string
     full_name   = string
     disable     = optional(bool, false)
-    member_of   = list(string) # List of group unique_names to assign the user to
-    create_key  = optional(bool, false)  # New field to determine if a key should be created
-    key_expiry  = optional(string, "") # Optional expiration for the key (ISO 8601 format, e.g., "2028-01-01T00:00:00.000Z")
+    member_of   = list(string)          # List of group unique_names to assign the user to
+    create_key  = optional(bool, false) # New field to determine if a key should be created
+    key_expiry  = optional(string, "")  # Optional expiration for the key (ISO 8601 format, e.g., "2028-01-01T00:00:00.000Z")
   }))
 }

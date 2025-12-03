@@ -9,3 +9,7 @@ output "example_bucket_name" {
 output "example_bucket_region" {
   value = data.storagegrid_bucket.example.region
 }
+
+output "example_bucket_object_lock" {
+  value = data.storagegrid_bucket.example.object_lock_configuration
+}

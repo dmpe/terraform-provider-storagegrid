@@ -7,3 +7,13 @@ resource "storagegrid_bucket" "example" {
 resource "storagegrid_bucket" "example_default_region" {
   name   = "example-bucket-default-region"
 }
+
+resource "storagegrid_bucket" "example_full" {
+  name = "example-bucket-full"
+  region = "example-region"
+
+  object_lock_configuration {
+    mode = "compliance"
+    days = 30
+  }
+}

@@ -19,20 +19,20 @@ provider "storagegrid" {
 
 # Create multiple groups dynamically
 resource "storagegrid_groups" "groups" {
-  for_each       = { for g in var.groups : g.unique_name => g }
-  unique_name    = each.value.unique_name
-  display_name   = each.value.display_name
+  for_each             = { for g in var.groups : g.unique_name => g }
+  unique_name          = each.value.unique_name
+  display_name         = each.value.display_name
   management_read_only = each.value.management_read_only
 
   policies = {
     management = each.value.management_policies
-    s3 = each.value.s3
+    s3         = each.value.s3
   }
 }
 
 # Create multiple users dynamically
 resource "storagegrid_users" "users" {
-  for_each   = { for u in var.users : u.unique_name => u }
+  for_each    = { for u in var.users : u.unique_name => u }
   unique_name = each.value.unique_name
   full_name   = each.value.full_name
   disable     = each.value.disable
@@ -41,7 +41,7 @@ resource "storagegrid_users" "users" {
 
 # Create multiple user's s3 access keys dynamically
 resource "storagegrid_s3_access_key" "user_keys" {
-    for_each    = { for u in var.users : u.unique_name => u if u.create_key == true }
-    user_uuid   = storagegrid_users.users[each.value.unique_name].id
-    expires     = each.value.key_expiry
+  for_each  = { for u in var.users : u.unique_name => u if u.create_key == true }
+  user_uuid = storagegrid_users.users[each.value.unique_name].id
+  expires   = each.value.key_expiry
 }
