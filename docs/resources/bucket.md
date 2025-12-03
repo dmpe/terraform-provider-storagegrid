@@ -21,4 +21,19 @@ Create a new bucket - a resource
 
 ### Optional
 
+- `object_lock_configuration` (Block, Optional) Object Lock configuration for the bucket. Can only be set when creating a new bucket. If object locking is supposed to be disabled, omit the object lock configuration.
+
+**Note:**
+- Specify either 'days' or 'years', but not both if object locking is enabled.
+- If object locking is enabled, object versioning will be enabled by default as well.
+  It's safe to provide a "storagegrid_bucket_versioning" resource with status "Enabled" additionally. (see [below for nested schema](#nestedblock--object_lock_configuration))
 - `region` (String) The region of the bucket, defaults to the StorageGRID's default region
+
+<a id="nestedblock--object_lock_configuration"></a>
+### Nested Schema for `object_lock_configuration`
+
+Optional:
+
+- `days` (Number) The number of days for which objects in the bucket are retained.
+- `mode` (String) The object lock retention mode. Can be 'compliance' or 'governance'.
+- `years` (Number) The number of years for which objects in the bucket are retained.

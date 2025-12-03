@@ -338,21 +338,90 @@ type S3AccessKeyResourceModel struct {
 }
 
 type BucketResourceModel struct {
-	Name   types.String `tfsdk:"name"`
-	Region types.String `tfsdk:"region"`
+	Name                    types.String             `tfsdk:"name"`
+	Region                  types.String             `tfsdk:"region"`
+	ObjectLockConfiguration *ObjectLockConfiguration `tfsdk:"object_lock_configuration"`
 }
 
 func (m *BucketResourceModel) ToBucketModel() BucketApiRequestModel {
+	var objectLockConfiguration *S3ObjectLock
+	if olcObj := m.ObjectLockConfiguration; olcObj != nil {
+		objectLockConfiguration = &S3ObjectLock{
+			Enabled: true,
+			RetentionSettings: RetentionSettings{
+				Mode:  olcObj.Mode.ValueString(),
+				Days:  int(olcObj.Days.ValueInt64()),
+				Years: int(olcObj.Years.ValueInt64()),
+			},
+		}
+	}
+
 	return BucketApiRequestModel{
-		Name:   m.Name.ValueString(),
-		Region: m.Region.ValueString(),
+		Name:         m.Name.ValueString(),
+		Region:       m.Region.ValueString(),
+		S3ObjectLock: objectLockConfiguration,
 	}
 }
 
-type BucketApiRequestModel struct {
-	Name   string `json:"name"`
-	Region string `json:"region"`
+// ObjectLockConfiguration is the representation of the bucket's s3 object lock configuration in the state.
+type ObjectLockConfiguration struct {
+	Mode  types.String `tfsdk:"mode"`
+	Days  types.Int64  `tfsdk:"days"`
+	Years types.Int64  `tfsdk:"years"`
 }
+
+// BucketApiRequestModel is the representation of a bucket in the API and is used for CRUD operations.
+type BucketApiRequestModel struct {
+	Name         string        `json:"name"`
+	Region       string        `json:"region"`
+	S3ObjectLock *S3ObjectLock `json:"s3ObjectLock,omitempty"`
+}
+
+type S3ObjectLock struct {
+	Enabled           bool              `json:"enabled"`
+	RetentionSettings RetentionSettings `json:"defaultRetentionSetting"`
+}
+
+type RetentionSettings struct {
+	Mode  string `json:"mode"`
+	Days  int    `json:"days,omitempty"`
+	Years int    `json:"years,omitempty"`
+}
+
 type BucketApiResponseModel struct {
 	Data BucketApiRequestModel `json:"data"`
+}
+
+type BucketVersioningResourceModel struct {
+	BucketName types.String `tfsdk:"bucket_name"`
+	Status     types.String `tfsdk:"status"`
+}
+
+func (m *BucketVersioningResourceModel) ToBucketVersioningApiRequestModel() BucketVersioningApiRequestModel {
+	return BucketVersioningApiRequestModel{
+		IsEnabled:   m.Status.ValueString() == "Enabled",
+		IsSuspended: m.Status.ValueString() == "Suspended",
+	}
+}
+
+type BucketVersioningApiRequestModel struct {
+	IsEnabled   bool `json:"versioningEnabled"`
+	IsSuspended bool `json:"versioningSuspended"`
+}
+
+type BucketVersioningApiResponseModel struct {
+	Data BucketVersioningApiRequestModel `json:"data"`
+}
+
+func (m *BucketVersioningApiResponseModel) Status() (status string) {
+	if m.Data.IsSuspended {
+		status = "Suspended"
+	} else {
+		if m.Data.IsEnabled {
+			status = "Enabled"
+		} else {
+			status = "Disabled"
+		}
+	}
+	return
 }

@@ -22,3 +22,16 @@ Fetch a bucket by its name - a data source
 ### Optional
 
 - `region` (String) The region of the bucket, defaults to the StorageGRID's default region
+
+### Read-Only
+
+- `object_lock_configuration` (Block, Read-only) Object Lock configuration for the bucket. Will only be set if object locking is enabled for the bucket. (see [below for nested schema](#nestedblock--object_lock_configuration))
+
+<a id="nestedblock--object_lock_configuration"></a>
+### Nested Schema for `object_lock_configuration`
+
+Read-Only:
+
+- `days` (Number) The number of days for which objects in the bucket are retained. Required if mode is 'compliance' or 'governance'.
+- `mode` (String) The object lock retention mode. Can be 'compliance' or 'governance'.
+- `years` (Number) The number of years for which objects in the bucket are retained. Required if mode is 'compliance' or 'governance'.

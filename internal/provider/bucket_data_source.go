@@ -5,13 +5,11 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider-defined types fully satisfy framework interfaces.
@@ -25,7 +23,7 @@ func NewBucketDataSource() datasource.DataSource {
 
 // bucketDataSource defines the data source implementation.
 type bucketDataSource struct {
-	client *S3GridClient
+	client *BucketClient
 }
 
 func (d *bucketDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -44,6 +42,25 @@ func (d *bucketDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Optional:    true,
 				Computed:    true,
 				Description: "The region of the bucket, defaults to the StorageGRID's default region",
+			},
+		},
+		Blocks: map[string]schema.Block{
+			"object_lock_configuration": schema.SingleNestedBlock{
+				Attributes: map[string]schema.Attribute{
+					"mode": schema.StringAttribute{
+						Computed:    true,
+						Description: "The object lock retention mode. Can be 'compliance' or 'governance'.",
+					},
+					"days": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The number of days for which objects in the bucket are retained. Required if mode is 'compliance' or 'governance'.",
+					},
+					"years": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The number of years for which objects in the bucket are retained. Required if mode is 'compliance' or 'governance'.",
+					},
+				},
+				MarkdownDescription: "Object Lock configuration for the bucket. Will only be set if object locking is enabled for the bucket.",
 			},
 		},
 	}
@@ -66,7 +83,7 @@ func (d *bucketDataSource) Configure(_ context.Context, req datasource.Configure
 		return
 	}
 
-	d.client = client
+	d.client = NewBucketClient(client)
 }
 
 func (d *bucketDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -79,34 +96,14 @@ func (d *bucketDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	tflog.Debug(ctx, "1. Get refreshed user information.")
-	endpoint := fmt.Sprintf("%s/%s/region", api_buckets, state.Name.ValueString())
-	respBody, _, _, err := d.client.SendRequest("GET", endpoint, nil, 200)
+	bucket, err := d.client.Read(ctx, state.Name.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read StorageGrid container, got error: %s", err))
+		if errors.Is(err, ErrBucketNotFound) {
+			resp.State.RemoveResource(ctx)
+			return
+		}
+		resp.Diagnostics.AddError("Error Reading StorageGrid container", err.Error())
 		return
-	}
-
-	type regionDataModel struct {
-		Region string `json:"region"`
-	}
-
-	type regionReadModel struct {
-		Data regionDataModel `json:"data"`
-	}
-
-	var returnBody regionReadModel
-
-	tflog.Debug(ctx, "2. Unmarshal bucket information to JSON body.")
-	if err := json.Unmarshal(respBody, &returnBody); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
-		return
-	}
-
-	tflog.Debug(ctx, "3. Overwrite fields with refreshed information.")
-	bucket := BucketResourceModel{
-		Name:   types.StringValue(state.Name.ValueString()),
-		Region: types.StringValue(returnBody.Data.Region),
 	}
 
 	// Save data into Terraform state
