@@ -76,7 +76,7 @@ output "read_bucket_versioning_status" {
   value = data.storagegrid_bucket_versioning.read.status
 }
 
-# Szenario: Change bucket to which a `bucket_versioning` resource is attached.
+# Scenario: Change bucket to which a `bucket_versioning` resource is attached.
 # 1. After initial apply, un-comment the following resources.
 # 3. Run `terraform apply`.
 #
