@@ -1,3 +1,9 @@
+## 1.9.0
+
+Feature:
+- Add support for [Bucket Versioning and Object Locking](https://github.com/dmpe/terraform-provider-storagegrid/pull/31) as reported by @cmdaltent. Thanks.
+
+
 ## 1.8.0
 
 Feature:
