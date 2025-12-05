@@ -2,8 +2,6 @@
 
 This is a terraform provider plugin for [NetApp StorageGRID S3](https://www.netapp.com/data-storage/storagegrid/) system.
 
-Version `v1.0.0` has been tested & validated to work against [11.8 version](https://docs.netapp.com/us-en/storagegrid-118/).
-
 **Update Summer 2025**:
 I no longer work at the company which has access to the StorageGrid system. 
 As a result, I am no longer able to conduct any tests and rely on contributors to 1) find and 2) fix any issues. 
@@ -110,7 +108,6 @@ Not the `SDKv2` and support for it (whatever the reason) will not be accepted.
 - An early attempt was done with [Code Generation](https://developer.hashicorp.com/terraform/plugin/code-generation) approach, but I
 have failed to overcome several issues with StorageGRID REST API (=json file) without doing manual changes to the Swagger API.
 
-
 ## Code repository structure
 
 - `Resources` and `data sources` are located in `internal/provider/`.
@@ -138,3 +135,14 @@ $ make build
 $ make lint
 ....
 ```
+
+## Contributors
+
+This project has received significant contributions by:
+
+- several corporate employees employed at <https://github.com/svalabs>.
+
+Other open source enthusiasts can be found here:
+- <https://github.com/dmpe/terraform-provider-storagegrid/graphs/contributors>
+
+I am grateful to them. Thank you.
