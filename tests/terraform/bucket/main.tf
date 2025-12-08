@@ -117,3 +117,21 @@ import {
   id = storagegrid_bucket.imported.name
   to = storagegrid_bucket_versioning.disabled_import
 }
+
+resource "storagegrid_bucket" "quota_enabled" {
+  name = "${var.example_bucket.name}-quota-enabled"
+}
+
+resource "storagegrid_bucket_quota" "quota_enabled" {
+  bucket_name = storagegrid_bucket.quota_enabled.name
+
+  object_bytes = 10000000000
+}
+
+data "storagegrid_bucket_quota" "read_quota" {
+  bucket_name = var.read_bucket_name
+}
+
+output "read_bucket_quota" {
+  value = data.storagegrid_bucket_quota.read_quota.object_bytes
+}
