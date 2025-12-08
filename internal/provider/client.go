@@ -13,6 +13,10 @@ import (
 	"net/http"
 )
 
+type HttpClient interface {
+	SendRequest(method string, path string, payload interface{}, statusCode int) (value []byte, respheaders string, respCode int, err error)
+}
+
 // NewTokenClient creates common HTTP client object for calling REST API
 func NewTokenClient(url string, bearerToken string, insecure bool) *S3GridClient {
 	gridClient := &S3GridClient{
