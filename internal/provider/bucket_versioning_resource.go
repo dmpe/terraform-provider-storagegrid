@@ -5,7 +5,6 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -15,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider-defined types fully satisfy framework interfaces.
@@ -95,7 +93,7 @@ func (r *bucketVersioningResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	updated, err := r.upsert(plan)
+	updated, err := plan.upsert(r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", err.Error())
 		return
@@ -113,7 +111,7 @@ func (r *bucketVersioningResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	read, err := r.read(ctx, state.BucketName.ValueString())
+	read, err := state.read(r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", err.Error())
 		return
@@ -130,7 +128,7 @@ func (r *bucketVersioningResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	updated, err := r.upsert(plan)
+	updated, err := plan.upsert(r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", err.Error())
 		return
@@ -148,7 +146,11 @@ func (r *bucketVersioningResource) Delete(context.Context, resource.DeleteReques
 }
 
 func (r *bucketVersioningResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	state, err := r.read(ctx, req.ID)
+	model := BucketVersioningResourceModel{
+		BucketName: types.StringValue(req.ID),
+	}
+
+	state, err := model.read(r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Importing StorageGrid container", err.Error())
 		return
@@ -165,42 +167,4 @@ func (r *bucketVersioningResource) ModifyPlan(_ context.Context, req resource.Mo
 			"Applying this resource destruction will only remove the resource from the Terraform state without actually disabling versioning on the bucket. Consider suspending the versioning instead as it is not possible to disable versioning on a previously versioned bucket.",
 		)
 	}
-}
-
-func (r *bucketVersioningResource) read(ctx context.Context, bucketName string) (*BucketVersioningResourceModel, error) {
-	tflog.Debug(ctx, "1. Get refreshed bucket information.")
-	endpoint := fmt.Sprintf("%s/%s/versioning", api_buckets, bucketName)
-	respBody, _, _, err := r.client.SendRequest("GET", endpoint, nil, 200)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read bucket versioning: %w", err)
-	}
-
-	var returnBody BucketVersioningApiResponseModel
-	tflog.Debug(ctx, "2. Unmarshal bucket information to JSON body.")
-	if err := json.Unmarshal(respBody, &returnBody); err != nil {
-		return nil, fmt.Errorf("unable to parse bucket versioning read response: %w", err)
-	}
-
-	return &BucketVersioningResourceModel{
-		BucketName: types.StringValue(bucketName),
-		Status:     types.StringValue(returnBody.Status()),
-	}, nil
-}
-
-func (r *bucketVersioningResource) upsert(data BucketVersioningResourceModel) (*BucketVersioningResourceModel, error) {
-	endpoint := fmt.Sprintf("%s/%s/versioning", api_buckets, data.BucketName.ValueString())
-	httpResp, _, _, err := r.client.SendRequest("PUT", endpoint, data.ToBucketVersioningApiRequestModel(), 200)
-	if err != nil {
-		return nil, fmt.Errorf("unable to create or update bucket versioning: %w", err)
-	}
-
-	var returnBody BucketVersioningApiResponseModel
-	if err := json.Unmarshal(httpResp, &returnBody); err != nil {
-		return nil, fmt.Errorf("unable to unmarshal create or update bucket versioning response: %w", err)
-	}
-
-	return &BucketVersioningResourceModel{
-		BucketName: data.BucketName,
-		Status:     types.StringValue(returnBody.Status()),
-	}, nil
 }
