@@ -391,37 +391,3 @@ type RetentionSettings struct {
 type BucketApiResponseModel struct {
 	Data BucketApiRequestModel `json:"data"`
 }
-
-type BucketVersioningResourceModel struct {
-	BucketName types.String `tfsdk:"bucket_name"`
-	Status     types.String `tfsdk:"status"`
-}
-
-func (m *BucketVersioningResourceModel) ToBucketVersioningApiRequestModel() BucketVersioningApiRequestModel {
-	return BucketVersioningApiRequestModel{
-		IsEnabled:   m.Status.ValueString() == "Enabled",
-		IsSuspended: m.Status.ValueString() == "Suspended",
-	}
-}
-
-type BucketVersioningApiRequestModel struct {
-	IsEnabled   bool `json:"versioningEnabled"`
-	IsSuspended bool `json:"versioningSuspended"`
-}
-
-type BucketVersioningApiResponseModel struct {
-	Data BucketVersioningApiRequestModel `json:"data"`
-}
-
-func (m *BucketVersioningApiResponseModel) Status() (status string) {
-	if m.Data.IsSuspended {
-		status = "Suspended"
-	} else {
-		if m.Data.IsEnabled {
-			status = "Enabled"
-		} else {
-			status = "Disabled"
-		}
-	}
-	return
-}
