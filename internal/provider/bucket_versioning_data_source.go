@@ -5,13 +5,10 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider-defined types fully satisfy framework interfaces.
@@ -71,34 +68,16 @@ func (d *bucketVersioningDataSource) Configure(_ context.Context, req datasource
 func (d *bucketVersioningDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state BucketVersioningResourceModel
 
-	// Read Terraform configuration data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &state)...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	tflog.Debug(ctx, "1. Get refreshed bucket information.")
-	endpoint := fmt.Sprintf("%s/%s/versioning", api_buckets, state.BucketName.ValueString())
-	respBody, _, _, err := d.client.SendRequest("GET", endpoint, nil, 200)
+	read, err := state.read(d.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", err.Error())
 		return
 	}
 
-	var returnBody BucketVersioningApiResponseModel
-	tflog.Debug(ctx, "2. Unmarshal bucket information to JSON body.")
-	if err := json.Unmarshal(respBody, &returnBody); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse bucket versioning response, got error: %s", err))
-		return
-	}
-
-	tflog.Debug(ctx, "3. Overwrite fields with refreshed information.")
-	bucket := BucketVersioningResourceModel{
-		BucketName: types.StringValue(state.BucketName.ValueString()),
-		Status:     types.StringValue(returnBody.Status()),
-	}
-
-	// Save data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &bucket)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, read)...)
 }

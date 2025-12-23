@@ -117,3 +117,47 @@ import {
   id = storagegrid_bucket.imported.name
   to = storagegrid_bucket_versioning.disabled_import
 }
+
+resource "storagegrid_bucket" "quota_enabled" {
+  name = "${var.example_bucket.name}-quota-enabled"
+}
+
+resource "storagegrid_bucket_quota" "quota_enabled" {
+  bucket_name = storagegrid_bucket.quota_enabled.name
+
+  object_bytes = 10000000000
+}
+
+data "storagegrid_bucket_quota" "read_quota" {
+  bucket_name = var.read_bucket_name
+}
+
+output "read_bucket_quota" {
+  value = data.storagegrid_bucket_quota.read_quota.object_bytes
+}
+
+data "storagegrid_user" "root_user" {
+  unique_name = "root"
+}
+
+resource "storagegrid_bucket_policy" "example" {
+  bucket_name = storagegrid_bucket.example_default_region.name
+
+  policy = {
+    statement = [{
+      sid    = "example-sid"
+      effect = "Allow"
+      action = ["s3:ListBucket"]
+      resource = [
+        "arn:aws:s3:::${storagegrid_bucket.example_default_region.name}",
+        "arn:aws:s3:::${storagegrid_bucket.example_default_region.name}/*"
+      ]
+      principal = {
+        type = "AWS"
+        identifiers = [
+          "arn:aws:iam::${var.grid_tenant_iid}:${data.storagegrid_user.root_user.unique_name}"
+        ]
+      }
+    }]
+  }
+}

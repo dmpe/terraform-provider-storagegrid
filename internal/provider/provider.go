@@ -228,6 +228,8 @@ func (p *storagegridProvider) Resources(ctx context.Context) []func() resource.R
 	return []func() resource.Resource{
 		NewBucketResource,
 		NewBucketVersioningResource,
+		NewBucketQuotaResource,
+		NewBucketPolicyResource,
 		NewGroupsResource,
 		NewUsersResource,
 		NewS3AccessSecretKeyCurrentUserResource,
@@ -239,6 +241,8 @@ func (p *storagegridProvider) DataSources(ctx context.Context) []func() datasour
 	return []func() datasource.DataSource{
 		NewBucketDataSource,
 		NewBucketVersioningDataSource,
+		NewBucketQuotaDataSource,
+		NewBucketPolicyDataSource,
 		NewGroupsDataSource,
 		NewGroupDataSource,
 		NewUsersDataSource,
