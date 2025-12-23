@@ -1,3 +1,9 @@
+## 1.10.0
+
+Feature:
+- Add support for [managing object quota and policies on buckets](https://github.com/dmpe/terraform-provider-storagegrid/pull/34) as reported by @cmdaltent. Thanks.
+
+
 ## 1.9.0
 
 Feature:
