@@ -22,18 +22,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// Ensure provider defined types fully satisfy framework interfaces.
+// Ensure provider-defined types fully satisfy framework interfaces.
 var (
 	_ resource.Resource                = &usersResource{}
 	_ resource.ResourceWithConfigure   = &usersResource{}
 	_ resource.ResourceWithImportState = &usersResource{}
 )
 
+// NewUsersResource returns a new resource instance.
 func NewUsersResource() resource.Resource {
 	return &usersResource{}
 }
 
-// NewUsersResource defines the resource implementation.
+// usersResource defines the resource implementation.
 type usersResource struct {
 	client *S3GridClient
 }
@@ -122,7 +123,6 @@ func (r *usersResource) Configure(ctx context.Context, req resource.ConfigureReq
 
 func (r *usersResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan usersDataSourceDataModel
-	var returnBody UsersDataModelSingle
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -149,6 +149,7 @@ func (r *usersResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	var returnBody UsersDataModelSingle
 	tflog.Debug(ctx, "3. User has been created and now we unmarshal it to json object.")
 	if err := json.Unmarshal(httpResp, &returnBody); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
@@ -156,7 +157,10 @@ func (r *usersResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	tflog.Debug(ctx, "4. Mapping json body back to the state file.")
-	returnBodyGroupMembers := []types.String{}
+	if !EqualElements(returnBody.Data.MemberOf, groupMembers) {
+		resp.Diagnostics.AddError("MemberOf Mismatch", fmt.Sprintf("Expected %v, got %v", groupMembers, returnBody.Data.MemberOf))
+		return
+	}
 
 	plan.ID = types.StringValue(returnBody.Data.ID)
 	plan.AccountId = types.StringValue(returnBody.Data.AccountId)
@@ -165,10 +169,6 @@ func (r *usersResource) Create(ctx context.Context, req resource.CreateRequest, 
 	plan.UserURN = types.StringValue(returnBody.Data.UserURN)
 	plan.Disable = types.BoolValue(returnBody.Data.Disable)
 	plan.Federated = types.BoolValue(returnBody.Data.Federated)
-	for _, singleMember := range returnBody.Data.MemberOf {
-		returnBodyGroupMembers = append(returnBodyGroupMembers, types.StringValue(singleMember))
-	}
-	plan.MemberOf = returnBodyGroupMembers
 
 	// Write logs using the tflog package
 	// Documentation: https://terraform.io/plugin/log
@@ -181,7 +181,7 @@ func (r *usersResource) Create(ctx context.Context, req resource.CreateRequest, 
 func (r *usersResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Get current state
 	var state usersDataSourceDataModel
-	var returnBody UsersDataModelSingle
+
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -204,18 +204,24 @@ func (r *usersResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	tflog.Debug(ctx, "2. Unmarshal user information to JSON body.")
+	var returnBody UsersDataModelSingle
 	if err := json.Unmarshal(respBody, &returnBody); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
 		return
 	}
 
-	tflog.Debug(ctx, "3. Overwrite fields with refreshed information.")
-	groupMembers := []types.String{}
-	for _, singleMember := range returnBody.Data.MemberOf {
-		groupMembers = append(groupMembers, types.StringValue(singleMember))
+	tflog.Debug(ctx, "3. Compare Group Membership")
+	groupMembers := make([]string, len(state.MemberOf))
+	for idx, groupMember := range state.MemberOf {
+		groupMembers[idx] = groupMember.ValueString()
+	}
+	if !EqualElements(returnBody.Data.MemberOf, groupMembers) {
+		resp.Diagnostics.AddError("MemberOf Mismatch", fmt.Sprintf("Expected %v, got %v", groupMembers, returnBody.Data.MemberOf))
+		return
 	}
 
-	usersData := &usersDataSourceDataModel{
+	tflog.Debug(ctx, "4. Overwrite fields with refreshed information.")
+	usersData := usersDataSourceDataModel{
 		UniqueName: types.StringValue(returnBody.Data.UniqueName),
 		FullName:   types.StringValue(returnBody.Data.FullName),
 		Disable:    types.BoolValue(returnBody.Data.Disable),
@@ -223,13 +229,11 @@ func (r *usersResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		ID:         types.StringValue(returnBody.Data.ID),
 		Federated:  types.BoolValue(returnBody.Data.Federated),
 		UserURN:    types.StringValue(returnBody.Data.UserURN),
-		MemberOf:   groupMembers,
+		MemberOf:   state.MemberOf,
 	}
 
-	state = *usersData
-
-	// Set refreshed state
-	diags = resp.State.Set(ctx, &state)
+	// Set the refreshed state
+	diags = resp.State.Set(ctx, &usersData)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -239,8 +243,6 @@ func (r *usersResource) Read(ctx context.Context, req resource.ReadRequest, resp
 func (r *usersResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var state usersDataSourceDataModel
 	var plan usersDataSourceDataModel
-	var returnBody UsersDataModelSingle
-	groupMembers := []string{}
 
 	// Read Terraform plan + state data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -256,6 +258,7 @@ func (r *usersResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	var userID = state.ID.ValueString()
 
 	tflog.Debug(ctx, "1. Create updated user information.")
+	groupMembers := []string{}
 	for _, member := range plan.MemberOf {
 		groupMembers = append(groupMembers, member.ValueString())
 	}
@@ -289,19 +292,20 @@ func (r *usersResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	tflog.Debug(ctx, "4. Unmarshal user information to JSON body.")
+	var returnBody UsersDataModelSingle
 	if err := json.Unmarshal(respBody, &returnBody); err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
 		return
 	}
 
-	tflog.Debug(ctx, "5. Overwrite fields with refreshed information.")
-	returnUserMemberOf := []types.String{}
-
-	for _, singleMember := range returnBody.Data.MemberOf {
-		returnUserMemberOf = append(returnUserMemberOf, types.StringValue(singleMember))
+	tflog.Debug(ctx, "5. Compare Group Membership")
+	if !EqualElements(returnBody.Data.MemberOf, groupMembers) {
+		resp.Diagnostics.AddError("MemberOf Mismatch", fmt.Sprintf("Expected %v, got %v", groupMembers, returnBody.Data.MemberOf))
+		return
 	}
 
-	usersData := &usersDataSourceDataModel{
+	tflog.Debug(ctx, "6. Overwrite fields with refreshed information.")
+	usersData := usersDataSourceDataModel{
 		UniqueName: types.StringValue(returnBody.Data.UniqueName),
 		FullName:   types.StringValue(returnBody.Data.FullName),
 		Disable:    types.BoolValue(returnBody.Data.Disable),
@@ -309,13 +313,11 @@ func (r *usersResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		ID:         types.StringValue(returnBody.Data.ID),
 		Federated:  types.BoolValue(returnBody.Data.Federated),
 		UserURN:    types.StringValue(returnBody.Data.UserURN),
-		MemberOf:   returnUserMemberOf,
+		MemberOf:   plan.MemberOf,
 	}
 
-	state = *usersData
-
 	// Save updated data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &usersData)...)
 }
 
 func (r *usersResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
