@@ -1,3 +1,9 @@
+## 1.11.0
+
+Bug Fix:
+- [User creation with multiple group memberships may lead to inconsistent apply](https://github.com/dmpe/terraform-provider-storagegrid/issues/36) as reported by @cmdaltent. Thanks.
+
+
 ## 1.10.0
 
 Feature:
