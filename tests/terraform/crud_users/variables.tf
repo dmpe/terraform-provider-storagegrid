@@ -1,18 +1,28 @@
 # Copyright (c) github.com/dmpe
 # SPDX-License-Identifier: MIT
 
-variable "vault_domain" {
-  description = "Vault domain"
-  type        = string
-  default     = "test"
-}
-
-variable "vault_token" {
-  description = "Vault token"
-  type        = string
-}
-
 variable "grid_tenant_iid" {
-  description = "Tenant ID"
   type        = string
+  description = "Tenant ID"
+}
+
+variable "grid_username" {
+  type        = string
+  description = "User name"
+}
+
+variable "grid_password" {
+  type        = string
+  description = "Password"
+}
+
+variable "grid_url" {
+  type        = string
+  description = "Grid URL"
+}
+
+variable "group_memberships" {
+  type        = list(string)
+  description = "Groups the test user is supposed to be a member of."
+  default     = []
 }
