@@ -46,19 +46,19 @@ Optional:
 - `not_action` (List of String) the specific exceptional actions. A statement must have either Action or NotAction.
 - `not_principal` (Attributes) The principal(s) that are denied access to the bucket.
 
-Specify either "principal" or "not_principal", but not both.
+~> Specify either `principal` or `not_principal`, but not both.
 
-To have Terraform render JSON containing "Principal": "*", use type = "*" and identifiers = ["*"].
-To have Terraform render JSON containing "Principal": {"AWS": "*"}, use type = "AWS" and identifiers = ["*"].
-If you want to specify a list of principals instead of a wildcard (["*"]) specify a list of principal ARNs as identifiers. (see [below for nested schema](#nestedatt--policy--statement--not_principal))
+-> To have Terraform render JSON containing `"Principal": "*"`, use `type = "*"` and set the identifiers to `null` (or omit it entirely).
+To have Terraform render JSON containing `"Principal": {"AWS": "*"}`, use `type = "AWS"` and `identifiers = ["*"]`.
+If you want to specify a list of principals instead of a wildcard (`["*"]`) specify a list of principal ARNs as identifiers. (see [below for nested schema](#nestedatt--policy--statement--not_principal))
 - `not_resource` (List of String) the objects that the statement does not cover. A statement must have either Resource or NotResource.
 - `principal` (Attributes) The principal(s) that are allowed access to the bucket.
 
-Specify either "principal" or "not_principal", but not both.
+~> Specify either `principal` or `not_principal`, but not both.
 
-To have Terraform render JSON containing "Principal": "*", use type = "*" and identifiers = ["*"].
-To have Terraform render JSON containing "Principal": {"AWS": "*"}, use type = "AWS" and identifiers = ["*"].
-If you want to specify a list of principals instead of a wildcard (["*"]) specify a list of principal ARNs as identifiers. (see [below for nested schema](#nestedatt--policy--statement--principal))
+-> To have Terraform render JSON containing `"Principal": "*"`, use `type = "*"` and set the identifiers to `null` (or omit it entirely).
+To have Terraform render JSON containing `"Principal": {"AWS": "*"}`, use `type = "AWS"` and `identifiers = ["*"]`.
+If you want to specify a list of principals instead of a wildcard (`["*"]`) specify a list of principal ARNs as identifiers. (see [below for nested schema](#nestedatt--policy--statement--principal))
 - `resource` (List of String) the objects that the statement covers. A statement must have either Resource or NotResource.
 - `sid` (String) the unique identifier for the statement
 

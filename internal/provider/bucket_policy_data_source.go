@@ -103,15 +103,11 @@ Retrieve the access policy for a specific bucket, providing insights into who ha
 											Description: "the identifiers of the principal that is allowed access",
 										},
 									},
-									MarkdownDescription: `
-The principal(s) that are allowed access to the bucket.
-
-Specify either "principal" or "not_principal", but not both.
-
-To have Terraform render JSON containing "Principal": "*", use type = "*" and identifiers = ["*"].
-To have Terraform render JSON containing "Principal": {"AWS": "*"}, use type = "AWS" and identifiers = ["*"].
-If you want to specify a list of principals instead of a wildcard (["*"]) specify a list of principal ARNs as identifiers. 
-`,
+									MarkdownDescription: "The principal(s) that are allowed access to the bucket.\n\n" +
+										"~> Specify either `principal` or `not_principal`, but not both.\n\n" +
+										"-> To have Terraform render JSON containing `\"Principal\": \"*\"`, use `type = \"*\"` and set the identifiers to `null` (or omit it entirely).\n" +
+										"To have Terraform render JSON containing `\"Principal\": {\"AWS\": \"*\"}`, use `type = \"AWS\"` and `identifiers = [\"*\"]`.\n" +
+										"If you want to specify a list of principals instead of a wildcard (`[\"*\"]`) specify a list of principal ARNs as identifiers.",
 								},
 								"not_principal": schema.SingleNestedAttribute{
 									Computed: true,
@@ -126,15 +122,11 @@ If you want to specify a list of principals instead of a wildcard (["*"]) specif
 											Description: "the identifiers of the principal that is denied access",
 										},
 									},
-									MarkdownDescription: `
-The principal(s) that are denied access to the bucket.
-
-Specify either "principal" or "not_principal", but not both.
-
-To have Terraform render JSON containing "Principal": "*", use type = "*" and identifiers = ["*"].
-To have Terraform render JSON containing "Principal": {"AWS": "*"}, use type = "AWS" and identifiers = ["*"].
-If you want to specify a list of principals instead of a wildcard (["*"]) specify a list of principal ARNs as identifiers. 
-`,
+									MarkdownDescription: "The principal(s) that are denied access to the bucket.\n\n" +
+										"~> Specify either `principal` or `not_principal`, but not both.\n\n" +
+										"-> To have Terraform render JSON containing `\"Principal\": \"\\*\"`, use `type = \"\\*\"` and set the identifiers to `null` (or omit it entirely).\n" +
+										"To have Terraform render JSON containing `\"Principal\": {\"AWS\": \"\\*\"}`, use `type = \"AWS\"` and `identifiers = [\"\\*\"]`.\n" +
+										"If you want to specify a list of principals instead of a wildcard (`[\"\\*\"]`) specify a list of principal ARNs as identifiers.",
 								},
 							},
 						},
