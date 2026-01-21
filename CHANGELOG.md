@@ -1,3 +1,7 @@
+## 1.12.0
+
+- Update of documentation.
+
 ## 1.11.0
 
 Bug Fix:
