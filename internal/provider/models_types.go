@@ -83,6 +83,51 @@ type S3PolicyStatementDataModel struct {
 	NotResource []types.String `tfsdk:"not_resource"`
 }
 
+type TenantConfigModel struct {
+	AutoLogout          types.Int64                   `tfsdk:"auto_logout"`
+	User                *TenantConfigModelUser        `tfsdk:"user"`
+	Token               *TenantConfigModelToken       `tfsdk:"token"`
+	Permissions         *TenantConfigModelPermissions `tfsdk:"permissions"`
+	DeactivatedFeatures *TenantConfigModelFeatures    `tfsdk:"deactivated_features"`
+	Account             *TenantConfigModelAccount     `tfsdk:"account"`
+	RestrictedPort      types.Bool                    `tfsdk:"restricted_port"`
+}
+
+type TenantConfigModelUser struct {
+	// ...
+}
+
+type TenantConfigModelToken struct {
+	// ...
+}
+
+type TenantConfigModelPermissions struct {
+	// ...
+}
+
+type TenantConfigModelFeatures struct {
+	// ...
+}
+
+type TenantConfigModelAccount struct {
+	ID           types.String                    `tfsdk:"id"`
+	Name         types.String                    `tfsdk:"name"`
+	Capabilities []types.String                  `tfsdk:"capabilities"`
+	Policy       *TenantConfigModelAccountPolicy `tfsdk:"policy"`
+	Replica      types.Bool                      `tfsdk:"replica"`
+}
+
+type TenantConfigModelAccountPolicy struct {
+	UseAccountIdentitySource         types.Bool   `tfsdk:"use_account_identity_source"`
+	AllowPlatformServices            types.Bool   `tfsdk:"allow_platform_services"`
+	AllowSelectObjectContent         types.Bool   `tfsdk:"allow_select_object_content"`
+	AllowComplianceMode              types.Bool   `tfsdk:"allow_compliance_mode"`
+	MaxRetentionDays                 types.Int64  `tfsdk:"max_retention_days"`
+	MaxRetentionYears                types.Int64  `tfsdk:"max_retention_years"`
+	QuotaObjectBytes                 types.Int64  `tfsdk:"quota_object_bytes"`
+	AllowedGridFederationConnections types.String `tfsdk:"allowed_grid_federation_connections"`
+}
+
 type ResourceField struct {
 	Resources []string
 }

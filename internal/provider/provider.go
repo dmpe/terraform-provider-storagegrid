@@ -226,29 +226,30 @@ func (p *storagegridProvider) Configure(ctx context.Context, req provider.Config
 
 func (p *storagegridProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		NewBucketPolicyResource,
+		NewBucketQuotaResource,
 		NewBucketResource,
 		NewBucketVersioningResource,
-		NewBucketQuotaResource,
-		NewBucketPolicyResource,
 		NewGroupsResource,
-		NewUsersResource,
 		NewS3AccessSecretKeyCurrentUserResource,
 		NewS3AccessSecretKeyResource,
+		NewUsersResource,
 	}
 }
 
 func (p *storagegridProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewBucketDataSource,
-		NewBucketVersioningDataSource,
-		NewBucketQuotaDataSource,
 		NewBucketPolicyDataSource,
-		NewGroupsDataSource,
+		NewBucketQuotaDataSource,
+		NewBucketVersioningDataSource,
 		NewGroupDataSource,
-		NewUsersDataSource,
-		NewUserDataSource,
-		NewS3DataSource_ByUserID_All,
+		NewGroupsDataSource,
 		NewS3DataSource_ByUserID_AccountID,
+		NewS3DataSource_ByUserID_All,
+		NewTenantConfigDataSource,
+		NewUserDataSource,
+		NewUsersDataSource,
 	}
 }
 
