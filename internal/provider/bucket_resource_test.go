@@ -5,6 +5,7 @@ package provider
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -228,6 +229,72 @@ func TestBucketResource_ObjectLockConfiguration(t *testing.T) {
 					ImportStateId:                        bucketName,
 				},
 				// Delete testing is done automatically
+			},
+		})
+	})
+
+	t.Run("days and years with terraform variables succeed", func(t *testing.T) {
+		config := `
+variable "days" {
+	type = number
+	default = 30
+}
+
+resource "storagegrid_bucket" "test" {
+  name = "tf-provider-acc-test-bucket-days-years"
+  region = "us-east-1"
+
+  object_lock_configuration {
+    mode = "compliance"
+    days = var.days
+  }
+}
+`
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+				"storagegrid": providerserver.NewProtocol6WithError(New("test")()),
+			},
+			Steps: []resource.TestStep{
+				{
+					Config: config,
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr("storagegrid_bucket.test", "name", "tf-provider-acc-test-bucket-days-years"),
+						resource.TestCheckResourceAttr("storagegrid_bucket.test", "region", "us-east-1"),
+						resource.TestCheckResourceAttr("storagegrid_bucket.test", "object_lock_configuration.mode", "compliance"),
+						resource.TestCheckNoResourceAttr("storagegrid_bucket.test", "object_lock_configuration.years"),
+						resource.TestCheckResourceAttr("storagegrid_bucket.test", "object_lock_configuration.days", "30"),
+					),
+				},
+			},
+		})
+	})
+
+	t.Run("days and years with terraform variables fail with invalid configuration", func(t *testing.T) {
+		config := `
+variable "days" {
+	type = number
+	default = 0
+}
+
+resource "storagegrid_bucket" "test" {
+  name = "tf-provider-acc-test-bucket-days-years"
+  region = "us-east-1"
+
+  object_lock_configuration {
+    mode = "compliance"
+    days = var.days
+  }
+}
+`
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+				"storagegrid": providerserver.NewProtocol6WithError(New("test")()),
+			},
+			Steps: []resource.TestStep{
+				{
+					Config:      config,
+					ExpectError: regexp.MustCompile("Object Lock Configuration must specify either days or years"),
+				},
 			},
 		})
 	})
