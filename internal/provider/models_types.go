@@ -94,19 +94,34 @@ type TenantConfigModel struct {
 }
 
 type TenantConfigModelUser struct {
-	// ...
+	ID                 types.String `tfsdk:"id"`
+	Username           types.String `tfsdk:"username"`
+	UniqueName         types.String `tfsdk:"unique_name"`
+	FirstName          types.String `tfsdk:"first_name"`
+	FullName           types.String `tfsdk:"full_name"`
+	Federated          types.Bool   `tfsdk:"federated"`
+	ManagementReadOnly types.Bool   `tfsdk:"management_read_only"`
 }
 
 type TenantConfigModelToken struct {
-	// ...
+	Expires types.String `tfsdk:"expires"`
 }
 
 type TenantConfigModelPermissions struct {
-	// ...
+	ManageAllContainers       types.Bool `tfsdk:"manage_all_containers"`
+	ManageEndpoints           types.Bool `tfsdk:"manage_endpoints"`
+	ManageOwnS3Credentials    types.Bool `tfsdk:"manage_own_s3_credentials"`
+	ManageOwnContainerObjects types.Bool `tfsdk:"manage_own_container_objects"`
+	ViewAllContainers         types.Bool `tfsdk:"view_all_containers"`
+	RootAccess                types.Bool `tfsdk:"root_access"`
 }
 
 type TenantConfigModelFeatures struct {
-	// ...
+	ManageAllContainers       types.Bool `tfsdk:"manage_all_containers"`
+	ManageEndpoints           types.Bool `tfsdk:"manage_endpoints"`
+	ManageOwnS3Credentials    types.Bool `tfsdk:"manage_own_s3_credentials"`
+	ManageOwnContainerObjects types.Bool `tfsdk:"manage_own_container_objects"`
+	ViewAllContainers         types.Bool `tfsdk:"view_all_containers"`
 }
 
 type TenantConfigModelAccount struct {

@@ -83,11 +83,11 @@ func (d *tenantConfigDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 							},
 							"max_retention_days": schema.Int64Attribute{
 								Computed:    true,
-								Description: "The maximum retention period in days allowed for new objects in compliance or governance mode. Does not affect existing objects. If both maxRetentionDays and maxRetentionYears are null, the maximum retention limit will be 100 years.",
+								Description: "The maximum retention period in days allowed for new objects in compliance or governance mode. Does not affect existing objects. If both max_retention_days and max_retention_years are null, the maximum retention limit will be 100 years.",
 							},
 							"max_retention_years": schema.Int64Attribute{
 								Computed:    true,
-								Description: "The maximum retention period in years allowed for new objects in compliance or governance mode. Does not affect existing objects. If both maxRetentionDays and maxRetentionYears are null, the maximum retention limit will be 100 years.",
+								Description: "The maximum retention period in years allowed for new objects in compliance or governance mode. Does not affect existing objects. If both max_retention_days and max_retention_years are null, the maximum retention limit will be 100 years.",
 							},
 							"quota_object_bytes": schema.Int64Attribute{
 								Computed:    true,
@@ -106,16 +106,96 @@ func (d *tenantConfigDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 				},
 			},
 			"user": schema.SingleNestedBlock{
-				Attributes: map[string]schema.Attribute{},
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Computed:    true,
+						Description: "UUID for the User (generated automatically)",
+					},
+					"username": schema.StringAttribute{
+						Computed:    true,
+						Description: "The username that is used to sign in",
+					},
+					"unique_name": schema.StringAttribute{
+						Computed:    true,
+						Description: "The machine-readable name for the User (unique within an Account)",
+					},
+					"first_name": schema.StringAttribute{
+						Computed:    true,
+						Description: "The User's first name",
+					},
+					"full_name": schema.StringAttribute{
+						Computed:    true,
+						Description: "The human-readable name for the User",
+					},
+					"federated": schema.BoolAttribute{
+						Computed:    true,
+						Description: "True if the User is federated, for example, an LDAP User",
+					},
+					"management_read_only": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Whether the user is in a read-only group",
+					},
+				},
 			},
 			"token": schema.SingleNestedBlock{
-				Attributes: map[string]schema.Attribute{},
+				Attributes: map[string]schema.Attribute{
+					"expires": schema.StringAttribute{
+						Computed:    true,
+						Description: "Time when the token expires",
+					},
+				},
 			},
 			"permissions": schema.SingleNestedBlock{
-				Attributes: map[string]schema.Attribute{},
+				Attributes: map[string]schema.Attribute{
+					"manage_all_containers": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Ability to manage all S3 buckets or Swift containers for this tenant account (overrides permission settings in group or bucket policies). Supersedes the view_all_containers permission.",
+					},
+					"manage_endpoints": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Ability to manage all S3 endpoints for this tenant account",
+					},
+					"manage_own_s3_credentials": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Ability to manage your personal S3 credentials",
+					},
+					"manage_own_container_objects": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Ability to use S3 Console to view and manage bucket objects",
+					},
+					"view_all_containers": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Ability to view settings for all S3 buckets or Swift containers for this tenant account. Superseded by the manage_all_containers permission.",
+					},
+					"root_access": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Full access to all tenant administration features",
+					},
+				},
 			},
 			"deactivated_features": schema.SingleNestedBlock{
-				Attributes: map[string]schema.Attribute{},
+				Attributes: map[string]schema.Attribute{
+					"manage_all_containers": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Ability to manage all S3 buckets or Swift containers for this tenant account (overrides permission settings in group or bucket policies). Supersedes the view_all_containers permission.",
+					},
+					"manage_endpoints": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Ability to manage all S3 endpoints for this tenant account",
+					},
+					"manage_own_s3_credentials": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Ability to manage your personal S3 credentials",
+					},
+					"manage_own_container_objects": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Ability to use S3 Console to view and manage bucket objects",
+					},
+					"view_all_containers": schema.BoolAttribute{
+						Computed:    true,
+						Description: "Ability to view settings for all S3 buckets or Swift containers for this tenant account. Superseded by the manage_all_containers permission.",
+					},
+				},
 			},
 		},
 	}
@@ -158,19 +238,34 @@ func (d *tenantConfigDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	type tenantConfigModelUser struct {
-		// ...
+		ID                 string `json:"id"`
+		Username           string `json:"username"`
+		UniqueName         string `json:"uniqueName"`
+		FirstName          string `json:"firstName"`
+		FullName           string `json:"fullName"`
+		Federated          bool   `json:"federated"`
+		ManagementReadOnly bool   `json:"managementReadOnly"`
 	}
 
 	type tenantConfigModelToken struct {
-		// ...
+		Expires string `json:"expires"`
 	}
 
 	type tenantConfigModelPermissions struct {
-		// ...
+		ManageAllContainers       bool `json:"manageAllContainers"`
+		ManageEndpoints           bool `json:"manageEndpoints"`
+		ManageOwnS3Credentials    bool `json:"manageOwnS3Credentials"`
+		ManageOwnContainerObjects bool `json:"manageOwnContainerObjects"`
+		ViewAllContainers         bool `json:"viewAllContainers"`
+		RootAccess                bool `json:"rootAccess"`
 	}
 
 	type tenantConfigModelFeatures struct {
-		// ...
+		ManageAllContainers       bool `json:"manageAllContainers"`
+		ManageEndpoints           bool `json:"manageEndpoints"`
+		ManageOwnS3Credentials    bool `json:"manageOwnS3Credentials"`
+		ManageOwnContainerObjects bool `json:"manageOwnContainerObjects"`
+		ViewAllContainers         bool `json:"viewAllContainers"`
 	}
 
 	type tenantConfigModelAccountPolicy struct {
@@ -197,7 +292,7 @@ func (d *tenantConfigDataSource) Read(ctx context.Context, req datasource.ReadRe
 		User                tenantConfigModelUser        `json:"user"`
 		Token               tenantConfigModelToken       `json:"token"`
 		Permissions         tenantConfigModelPermissions `json:"permissions"`
-		DeactivatedFeatures tenantConfigModelFeatures    `json:"deactivated_features"`
+		DeactivatedFeatures tenantConfigModelFeatures    `json:"deactivatedFeatures"`
 		Account             tenantConfigModelAccount     `json:"account"`
 		RestrictedPort      bool                         `json:"restrictedPort"`
 	}
@@ -215,22 +310,39 @@ func (d *tenantConfigDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	var (
-		// user        TenantConfigModelUser
-		// token       TenantConfigModelToken
-		// permissions TenantConfigModelPermissions
-		// features    TenantConfigModelFeatures
-		account TenantConfigModelAccount
-		policy  TenantConfigModelAccountPolicy
-		data    TenantConfigModel
+		user        TenantConfigModelUser
+		token       TenantConfigModelToken
+		permissions TenantConfigModelPermissions
+		features    TenantConfigModelFeatures
+		account     TenantConfigModelAccount
+		policy      TenantConfigModelAccountPolicy
+		data        TenantConfigModel
 	)
 
 	// Translate API model to Terraform model
-	account.ID = types.StringValue(config.Data.Account.ID)
-	account.Name = types.StringValue(config.Data.Account.Name)
-	account.Capabilities = make([]types.String, len(config.Data.Account.Capabilities))
-	for i, cap := range config.Data.Account.Capabilities {
-		account.Capabilities[i] = types.StringValue(cap)
-	}
+	user.ID = types.StringValue(config.Data.User.ID)
+	user.Username = types.StringValue(config.Data.User.Username)
+	user.UniqueName = types.StringValue(config.Data.User.UniqueName)
+	user.FirstName = types.StringValue(config.Data.User.FirstName)
+	user.FullName = types.StringValue(config.Data.User.FullName)
+	user.Federated = types.BoolValue(config.Data.User.Federated)
+	user.ManagementReadOnly = types.BoolValue(config.Data.User.ManagementReadOnly)
+
+	token.Expires = types.StringValue(config.Data.Token.Expires)
+
+	permissions.ManageAllContainers = types.BoolValue(config.Data.Permissions.ManageAllContainers)
+	permissions.ManageEndpoints = types.BoolValue(config.Data.Permissions.ManageEndpoints)
+	permissions.ManageOwnS3Credentials = types.BoolValue(config.Data.Permissions.ManageOwnS3Credentials)
+	permissions.ManageOwnContainerObjects = types.BoolValue(config.Data.Permissions.ManageOwnContainerObjects)
+	permissions.ViewAllContainers = types.BoolValue(config.Data.Permissions.ViewAllContainers)
+	permissions.RootAccess = types.BoolValue(config.Data.Permissions.RootAccess)
+
+	features.ManageAllContainers = types.BoolValue(config.Data.DeactivatedFeatures.ManageAllContainers)
+	features.ManageEndpoints = types.BoolValue(config.Data.DeactivatedFeatures.ManageEndpoints)
+	features.ManageOwnS3Credentials = types.BoolValue(config.Data.DeactivatedFeatures.ManageOwnS3Credentials)
+	features.ManageOwnContainerObjects = types.BoolValue(config.Data.DeactivatedFeatures.ManageOwnContainerObjects)
+	features.ViewAllContainers = types.BoolValue(config.Data.DeactivatedFeatures.ViewAllContainers)
+
 	policy.UseAccountIdentitySource = types.BoolValue(config.Data.Account.Policy.UseAccountIdentitySource)
 	policy.AllowPlatformServices = types.BoolValue(config.Data.Account.Policy.AllowPlatformServices)
 	policy.AllowSelectObjectContent = types.BoolValue(config.Data.Account.Policy.AllowSelectObjectContent)
@@ -239,14 +351,21 @@ func (d *tenantConfigDataSource) Read(ctx context.Context, req datasource.ReadRe
 	policy.MaxRetentionYears = types.Int64Value(int64(config.Data.Account.Policy.MaxRetentionYears))
 	policy.QuotaObjectBytes = types.Int64Value(int64(config.Data.Account.Policy.QuotaObjectBytes))
 	policy.AllowedGridFederationConnections = types.StringValue(config.Data.Account.Policy.AllowedGridFederationConnections)
+
+	account.ID = types.StringValue(config.Data.Account.ID)
+	account.Name = types.StringValue(config.Data.Account.Name)
+	account.Capabilities = make([]types.String, len(config.Data.Account.Capabilities))
+	for i, cap := range config.Data.Account.Capabilities {
+		account.Capabilities[i] = types.StringValue(cap)
+	}
 	account.Policy = &policy
 	account.Replica = types.BoolValue(config.Data.Account.Replica)
 
 	data.AutoLogout = types.Int64Value(int64(config.Data.AutoLogout))
-	// data.User = &user
-	// data.Token = &token
-	// data.Permissions = &permissions
-	// data.DeactivatedFeatures = &features
+	data.User = &user
+	data.Token = &token
+	data.Permissions = &permissions
+	data.DeactivatedFeatures = &features
 	data.Account = &account
 	data.RestrictedPort = types.BoolValue(config.Data.RestrictedPort)
 
