@@ -225,6 +225,10 @@ func (r *bucketResource) ValidateConfig(ctx context.Context, req resource.Valida
 
 	olc := config.ObjectLockConfiguration
 
+	if olc.Days.IsUnknown() || olc.Years.IsUnknown() {
+		return
+	}
+
 	if olc.Days.ValueInt64() == 0 && olc.Years.ValueInt64() == 0 {
 		resp.Diagnostics.AddError(
 			"Invalid Object Lock Configuration",
