@@ -6,6 +6,7 @@ terraform.tfplan
 terraform.tfstate
 bin/
 dist/
+.cache/
 modules-dev/
 /pkg/
 *.backup
