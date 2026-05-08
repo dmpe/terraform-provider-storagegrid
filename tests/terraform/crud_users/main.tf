@@ -1,6 +1,14 @@
 # Copyright (c) github.com/dmpe
 # SPDX-License-Identifier: MIT
 
+terraform {
+  required_providers {
+    storagegrid = {
+      source = "github.com/dmpe/storagegrid"
+    }
+  }
+}
+
 provider "storagegrid" {
   address  = var.grid_url
   username = var.grid_username

@@ -92,6 +92,7 @@ func (r *usersResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				},
 			},
 			id: schema.StringAttribute{
+				Optional: true,
 				Computed: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -156,6 +157,18 @@ func (r *usersResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	if returnBody.Data.ID == "" {
+		returnBody, _, err = r.readUser(ctx, "", plan.UniqueName.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read created user, got error: %s", err))
+			return
+		}
+		if returnBody.Data.ID == "" {
+			resp.Diagnostics.AddError("Client Error", "Created user response did not include an id")
+			return
+		}
+	}
+
 	tflog.Debug(ctx, "4. Mapping json body back to the state file.")
 	if !EqualElements(returnBody.Data.MemberOf, groupMembers) {
 		resp.Diagnostics.AddError("MemberOf Mismatch", fmt.Sprintf("Expected %v, got %v", groupMembers, returnBody.Data.MemberOf))
@@ -189,7 +202,7 @@ func (r *usersResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	tflog.Debug(ctx, "1. Get refreshed user information.")
-	respBody, _, respCode, err := r.client.SendRequest("GET", api_users+"/"+state.ID.ValueString(), nil, 200)
+	returnBody, respCode, err := r.readUser(ctx, state.ID.ValueString(), state.UniqueName.ValueString())
 	if err != nil {
 		if respCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
@@ -198,15 +211,8 @@ func (r *usersResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 		resp.Diagnostics.AddError(
 			"Error Reading StorageGrid user",
-			"Could not read StorageGrid user ID "+state.ID.ValueString()+": "+err.Error(),
+			"Could not read StorageGrid user ID "+state.ID.ValueString()+" unique_name "+state.UniqueName.ValueString()+": "+err.Error(),
 		)
-		return
-	}
-
-	tflog.Debug(ctx, "2. Unmarshal user information to JSON body.")
-	var returnBody UsersDataModelSingle
-	if err := json.Unmarshal(respBody, &returnBody); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
 		return
 	}
 
@@ -255,7 +261,20 @@ func (r *usersResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	var userID = state.ID.ValueString()
+
+	userID := state.ID.ValueString()
+	if userID == "" {
+		returnBody, _, err := r.readUser(ctx, "", state.UniqueName.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to resolve user ID for update, got error: %s", err))
+			return
+		}
+		if returnBody.Data.ID == "" {
+			resp.Diagnostics.AddError("Client Error", "Unable to resolve user ID for update")
+			return
+		}
+		userID = returnBody.Data.ID
+	}
 
 	tflog.Debug(ctx, "1. Create updated user information.")
 	groupMembers := []string{}
@@ -327,9 +346,28 @@ func (r *usersResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	userID := state.ID.ValueString()
+	if userID == "" {
+		returnBody, respCode, err := r.readUser(ctx, "", state.UniqueName.ValueString())
+		if err != nil {
+			if respCode == http.StatusNotFound {
+				return
+			}
+			resp.Diagnostics.AddError(
+				"Error Resolving StorageGrid user",
+				"Could not resolve user ID for deletion, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		if returnBody.Data.ID == "" {
+			resp.Diagnostics.AddError("Error Resolving StorageGrid user", "Could not resolve user ID for deletion")
+			return
+		}
+		userID = returnBody.Data.ID
+	}
 
 	// in order for us to delete it, we first need to retrieve the same user and its ID
-	_, _, _, err := r.client.SendRequest("DELETE", api_users+"/"+state.ID.ValueString(), nil, 204)
+	_, _, _, err := r.client.SendRequest("DELETE", api_users+"/"+userID, nil, 204)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting StorageGrid user",
@@ -341,4 +379,27 @@ func (r *usersResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 
 func (r *usersResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func (r *usersResource) readUser(ctx context.Context, userID string, uniqueName string) (UsersDataModelSingle, int, error) {
+	var returnBody UsersDataModelSingle
+
+	fullPath := api_users + "/" + userID
+	if userID == "" {
+		if uniqueName == "" {
+			return returnBody, 0, fmt.Errorf("cannot read StorageGrid user without id or unique_name")
+		}
+		fullPath = api_users + "/" + uniqueName
+	}
+
+	respBody, _, respCode, err := r.client.SendRequest("GET", fullPath, nil, 200)
+	if err != nil {
+		return returnBody, respCode, err
+	}
+
+	if err := json.Unmarshal(respBody, &returnBody); err != nil {
+		return returnBody, respCode, err
+	}
+
+	return returnBody, respCode, nil
 }

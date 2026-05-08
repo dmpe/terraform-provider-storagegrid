@@ -5,11 +5,11 @@ resource "storagegrid_bucket" "example" {
 
 # will use the region configured as default in the StorageGRID instance.
 resource "storagegrid_bucket" "example_default_region" {
-  name   = "example-bucket-default-region"
+  name = "example-bucket-default-region"
 }
 
 resource "storagegrid_bucket" "example_full" {
-  name = "example-bucket-full"
+  name   = "example-bucket-full"
   region = "example-region"
 
   object_lock_configuration {

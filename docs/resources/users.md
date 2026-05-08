@@ -33,11 +33,10 @@ resource "storagegrid_users" "new-local-user" {
 ### Optional
 
 - `disable` (Boolean) Do you want to prevent this user from signing in regardless of assigned group permissions?
+- `id` (String) The ID of this resource.
 
 ### Read-Only
 
 - `account_id` (String)
 - `federated` (Boolean) True if the User is federated, for example, an LDAP User
-- `id` (String) The ID of this resource.
 - `user_urn` (String)
-

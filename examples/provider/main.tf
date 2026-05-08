@@ -8,9 +8,9 @@ terraform {
 }
 
 provider "storagegrid" {
-  address   = "https://grid.firm.com:9443"
-  username  = "grid"
-  password  = "change_me"
-  tenant    = "<int>" # Tenant ID
-  insecure  = false
+  address  = "https://grid.firm.com:9443"
+  username = "grid"
+  password = "change_me"
+  tenant   = "<int>" # Tenant ID
+  insecure = false
 }
