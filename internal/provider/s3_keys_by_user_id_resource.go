@@ -180,25 +180,76 @@ func (r *s3AccessSecretKeyResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	tflog.Debug(ctx, "1. Get refreshed access key information.")
-	respBody, _, respCode, err := r.client.SendRequest("GET", api_users+"/"+state.UserUUID.ValueString()+api_s3_suffix+"/"+state.AccessKey.ValueString(), nil, 200)
-	if err != nil {
-		if respCode == http.StatusNotFound {
-			resp.State.RemoveResource(ctx)
+	accessKey := s3AccessKeyValue(state)
+	if accessKey != "" {
+		tflog.Debug(ctx, "1. Get refreshed access key information.")
+		respBody, _, respCode, err := r.client.SendRequest("GET", api_users+"/"+state.UserUUID.ValueString()+api_s3_suffix+"/"+accessKey, nil, 200)
+		if err != nil {
+			if respCode == http.StatusNotFound {
+				resp.State.RemoveResource(ctx)
+				return
+			}
+
+			resp.Diagnostics.AddError(
+				"Error Reading StorageGrid access key",
+				"Could not read StorageGrid access key "+accessKey+": "+err.Error(),
+			)
 			return
 		}
 
-		resp.Diagnostics.AddError(
-			"Error Reading StorageGrid access key",
-			"Could not read StorageGrid access key "+state.AccessKey.ValueString()+": "+err.Error(),
-		)
-		return
-	}
+		if err := json.Unmarshal(respBody, &returnBody); err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
+			return
+		}
+	} else {
+		keyID := s3AccessKeyID(state)
+		if keyID == "" {
+			resp.Diagnostics.AddError(
+				"Error Reading StorageGrid access key",
+				"Could not read StorageGrid access key because neither access_key nor id is present in state.",
+			)
+			return
+		}
 
-	tflog.Debug(ctx, "2. Unmarshal user information to JSON body.")
-	if err := json.Unmarshal(respBody, &returnBody); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
-		return
+		tflog.Debug(ctx, "1. Get refreshed access key information from access key list.")
+		respBody, _, respCode, err := r.client.SendRequest("GET", api_users+"/"+state.UserUUID.ValueString()+api_s3_suffix, nil, 200)
+		if err != nil {
+			if respCode == http.StatusNotFound {
+				resp.State.RemoveResource(ctx)
+				return
+			}
+
+			resp.Diagnostics.AddError(
+				"Error Reading StorageGrid access key",
+				"Could not list StorageGrid access keys for "+state.UserUUID.ValueString()+": "+err.Error(),
+			)
+			return
+		}
+
+		var listBody UserIDS3AccessKeys
+		if err := json.Unmarshal(respBody, &listBody); err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
+			return
+		}
+
+		for _, key := range listBody.Data {
+			if key.ID == keyID {
+				returnBody.Data = S3AccessSecretKey{
+					ID:          key.ID,
+					AccountId:   key.AccountId,
+					DisplayName: key.DisplayName,
+					UserURN:     key.UserURN,
+					UserUUID:    key.UserUUID,
+					Expires:     key.Expires,
+				}
+				break
+			}
+		}
+
+		if returnBody.Data.ID == "" {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 	}
 
 	tflog.Debug(ctx, "3. Overwrite fields with refreshed information.")
@@ -236,8 +287,16 @@ func (r *s3AccessSecretKeyResource) Delete(ctx context.Context, req resource.Del
 		return
 	}
 
-	// in order for us to delete it, we first need to retrieve user id and access key
-	_, _, _, err := r.client.SendRequest("DELETE", api_users+"/"+state.UserUUID.ValueString()+api_s3_suffix+"/"+state.AccessKey.ValueString(), nil, 204)
+	keyID := s3AccessKeyIdentifier(state)
+	if keyID == "" {
+		resp.Diagnostics.AddError(
+			"Error Deleting StorageGrid access key",
+			"Could not delete StorageGrid access key because neither access_key nor id is present in state.",
+		)
+		return
+	}
+
+	_, _, _, err := r.client.SendRequest("DELETE", api_users+"/"+state.UserUUID.ValueString()+api_s3_suffix+"/"+keyID, nil, 204)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting StorageGrid access keys",
@@ -249,4 +308,25 @@ func (r *s3AccessSecretKeyResource) Delete(ctx context.Context, req resource.Del
 
 func (r *s3AccessSecretKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("access_key"), req, resp)
+}
+
+func s3AccessKeyIdentifier(state S3AccessKeyResourceModel) string {
+	if accessKey := s3AccessKeyValue(state); accessKey != "" {
+		return accessKey
+	}
+	return s3AccessKeyID(state)
+}
+
+func s3AccessKeyValue(state S3AccessKeyResourceModel) string {
+	if !state.AccessKey.IsNull() && !state.AccessKey.IsUnknown() && state.AccessKey.ValueString() != "" {
+		return state.AccessKey.ValueString()
+	}
+	return ""
+}
+
+func s3AccessKeyID(state S3AccessKeyResourceModel) string {
+	if !state.ID.IsNull() && !state.ID.IsUnknown() && state.ID.ValueString() != "" {
+		return state.ID.ValueString()
+	}
+	return ""
 }

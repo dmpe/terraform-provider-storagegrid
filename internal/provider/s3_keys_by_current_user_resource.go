@@ -162,25 +162,76 @@ func (r *s3AccessSecretKeyCurrentUserResource) Read(ctx context.Context, req res
 		return
 	}
 
-	tflog.Debug(ctx, "1. Get refreshed access key information.")
-	respBody, _, respCode, err := r.client.SendRequest("GET", api_users+"/current-user"+api_s3_suffix+"/"+state.AccessKey.ValueString(), nil, 200)
-	if err != nil {
-		if respCode == http.StatusNotFound {
-			resp.State.RemoveResource(ctx)
+	accessKey := s3AccessKeyValue(state)
+	if accessKey != "" {
+		tflog.Debug(ctx, "1. Get refreshed access key information.")
+		respBody, _, respCode, err := r.client.SendRequest("GET", api_users+"/current-user"+api_s3_suffix+"/"+accessKey, nil, 200)
+		if err != nil {
+			if respCode == http.StatusNotFound {
+				resp.State.RemoveResource(ctx)
+				return
+			}
+
+			resp.Diagnostics.AddError(
+				"Error Reading StorageGrid access key",
+				"Could not read StorageGrid access key "+accessKey+": "+err.Error(),
+			)
 			return
 		}
 
-		resp.Diagnostics.AddError(
-			"Error Reading StorageGrid access key",
-			"Could not read StorageGrid access key "+state.AccessKey.ValueString()+": "+err.Error(),
-		)
-		return
-	}
+		if err := json.Unmarshal(respBody, &returnBody); err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
+			return
+		}
+	} else {
+		keyID := s3AccessKeyID(state)
+		if keyID == "" {
+			resp.Diagnostics.AddError(
+				"Error Reading StorageGrid access key",
+				"Could not read StorageGrid access key because neither access_key nor id is present in state.",
+			)
+			return
+		}
 
-	tflog.Debug(ctx, "2. Unmarshal user information to JSON body.")
-	if err := json.Unmarshal(respBody, &returnBody); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
-		return
+		tflog.Debug(ctx, "1. Get refreshed access key information from current-user access key list.")
+		respBody, _, respCode, err := r.client.SendRequest("GET", api_users+"/current-user"+api_s3_suffix, nil, 200)
+		if err != nil {
+			if respCode == http.StatusNotFound {
+				resp.State.RemoveResource(ctx)
+				return
+			}
+
+			resp.Diagnostics.AddError(
+				"Error Reading StorageGrid access key",
+				"Could not list StorageGrid current-user access keys: "+err.Error(),
+			)
+			return
+		}
+
+		var listBody UserIDS3AccessKeys
+		if err := json.Unmarshal(respBody, &listBody); err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
+			return
+		}
+
+		for _, key := range listBody.Data {
+			if key.ID == keyID {
+				returnBody.Data = S3AccessSecretKey{
+					ID:          key.ID,
+					AccountId:   key.AccountId,
+					DisplayName: key.DisplayName,
+					UserURN:     key.UserURN,
+					UserUUID:    key.UserUUID,
+					Expires:     key.Expires,
+				}
+				break
+			}
+		}
+
+		if returnBody.Data.ID == "" {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 	}
 
 	tflog.Debug(ctx, "3. Overwrite fields with refreshed information.")
@@ -211,15 +262,23 @@ func (r *s3AccessSecretKeyCurrentUserResource) Update(ctx context.Context, req r
 }
 
 func (r *s3AccessSecretKeyCurrentUserResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state UserIDS3AccessSecretKeysModel
+	var state S3AccessKeyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// in order for us to delete it, we first need to retrieve user id and access key
-	_, _, _, err := r.client.SendRequest("DELETE", api_users+"/current-user"+api_s3_suffix+"/"+state.Data.AccessKey.ValueString(), nil, 204)
+	keyID := s3AccessKeyIdentifier(state)
+	if keyID == "" {
+		resp.Diagnostics.AddError(
+			"Error Deleting StorageGrid access key",
+			"Could not delete StorageGrid access key because neither access_key nor id is present in state.",
+		)
+		return
+	}
+
+	_, _, _, err := r.client.SendRequest("DELETE", api_users+"/current-user"+api_s3_suffix+"/"+keyID, nil, 204)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting StorageGrid access key",
