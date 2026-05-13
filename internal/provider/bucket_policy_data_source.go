@@ -171,6 +171,10 @@ func (d *bucketPolicyDataSource) Read(ctx context.Context, req datasource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if read == nil {
+		resp.Diagnostics.AddError("bucket policy not found", fmt.Sprintf("bucket '%s' does not have a policy", state.BucketName.ValueString()))
+		return
+	}
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &read)...)

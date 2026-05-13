@@ -416,7 +416,7 @@ func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	tflog.Debug(ctx, "1. Get refreshed group information.")
-	respBody, _, respCode, err := r.client.SendRequest("GET", api_groups+"/"+state.ID.ValueString(), nil, 200)
+	returnBody, respCode, err := r.readGroup(ctx, state.ID.ValueString(), state.UniqueName.ValueString())
 	if err != nil {
 		if respCode == http.StatusNotFound {
 			resp.State.RemoveResource(ctx)
@@ -425,14 +425,8 @@ func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 		resp.Diagnostics.AddError(
 			"Error Reading StorageGrid Group",
-			"Could not read StorageGrid group ID "+state.ID.ValueString()+": "+err.Error(),
+			"Could not read StorageGrid group ID "+state.ID.ValueString()+" unique_name "+state.UniqueName.ValueString()+": "+err.Error(),
 		)
-		return
-	}
-
-	tflog.Debug(ctx, "2. Unmarshal group information to JSON body.")
-	if err := json.Unmarshal(respBody, &returnBody); err != nil {
-		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
 		return
 	}
 
@@ -521,6 +515,18 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 	var groupID = state.ID.ValueString()
+	if groupID == "" {
+		returnBody, _, err := r.readGroup(ctx, "", state.UniqueName.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to resolve group ID for update, got error: %s", err))
+			return
+		}
+		if returnBody.Data.ID == "" {
+			resp.Diagnostics.AddError("Client Error", "Unable to resolve group ID for update")
+			return
+		}
+		groupID = returnBody.Data.ID
+	}
 
 	tflog.Debug(ctx, "1. Create updated group information.")
 	mgmtPolicies := &ManagementPolicy{
@@ -674,9 +680,28 @@ func (r *groupsResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	groupID := state.ID.ValueString()
+	if groupID == "" {
+		returnBody, respCode, err := r.readGroup(ctx, "", state.UniqueName.ValueString())
+		if err != nil {
+			if respCode == http.StatusNotFound {
+				return
+			}
+			resp.Diagnostics.AddError(
+				"Error Resolving StorageGrid group",
+				"Could not resolve group ID for deletion, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		if returnBody.Data.ID == "" {
+			resp.Diagnostics.AddError("Error Resolving StorageGrid group", "Could not resolve group ID for deletion")
+			return
+		}
+		groupID = returnBody.Data.ID
+	}
 
 	// in order for us to delete it, we first need to retrieve the same group and its ID
-	_, _, _, err := r.client.SendRequest("DELETE", api_groups+"/"+state.ID.ValueString(), nil, 204)
+	_, _, _, err := r.client.SendRequest("DELETE", api_groups+"/"+groupID, nil, 204)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting StorageGrid group",
@@ -688,4 +713,27 @@ func (r *groupsResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 func (r *groupsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func (r *groupsResource) readGroup(ctx context.Context, groupID string, uniqueName string) (groupsDataSourceGolangModelSingle, int, error) {
+	var returnBody groupsDataSourceGolangModelSingle
+
+	fullPath := api_groups + "/" + groupID
+	if groupID == "" {
+		if uniqueName == "" {
+			return returnBody, 0, fmt.Errorf("cannot read StorageGrid group without id or unique_name")
+		}
+		fullPath = api_groups + "/" + uniqueName
+	}
+
+	respBody, _, respCode, err := r.client.SendRequest("GET", fullPath, nil, 200)
+	if err != nil {
+		return returnBody, respCode, err
+	}
+
+	if err := json.Unmarshal(respBody, &returnBody); err != nil {
+		return returnBody, respCode, err
+	}
+
+	return returnBody, respCode, nil
 }
