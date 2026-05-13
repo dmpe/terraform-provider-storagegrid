@@ -435,3 +435,12 @@ func TestNewBucketPolicyResourceModel(t *testing.T) {
 		})
 	}
 }
+
+func TestNewBucketPolicyResourceModel_NoPolicy(t *testing.T) {
+	var diags diag.Diagnostics
+
+	model := NewBucketPolicyResourceModel("test-bucket", []byte(`{"data":{"policy":null}}`), &diags)
+
+	assert.False(t, diags.HasError())
+	assert.Nil(t, model)
+}

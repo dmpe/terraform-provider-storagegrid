@@ -280,6 +280,10 @@ func (r *bucketPolicyResource) Read(ctx context.Context, req resource.ReadReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if model == nil {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
 }
@@ -306,6 +310,10 @@ func (r *bucketPolicyResource) ImportState(ctx context.Context, req resource.Imp
 
 	state := model.read(r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if state == nil {
+		resp.Diagnostics.AddError("bucket policy not found", fmt.Sprintf("bucket '%s' does not have a policy", req.ID))
 		return
 	}
 

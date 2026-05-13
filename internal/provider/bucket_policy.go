@@ -190,7 +190,12 @@ func (m *BucketPolicyResourceModel) upsert(ctx context.Context, client HttpClien
 		return nil
 	}
 
-	return NewBucketPolicyResourceModel(m.BucketName.ValueString(), respBody, diagnostics)
+	model := NewBucketPolicyResourceModel(m.BucketName.ValueString(), respBody, diagnostics)
+	if model == nil && !diagnostics.HasError() {
+		diagnostics.AddError("bucket policy missing", fmt.Sprintf("StorageGRID returned no bucket policy for bucket '%s' after create or update", m.BucketName.ValueString()))
+	}
+
+	return model
 }
 
 func (m *BucketPolicyResourceModel) read(client HttpClient, diagnostics *diag.Diagnostics) *BucketPolicyResourceModel {
@@ -233,6 +238,10 @@ func NewBucketPolicyResourceModel(bucketName string, input []byte, diagnostics *
 	var returnBody responseDataType
 	if err := json.Unmarshal(input, &returnBody); err != nil {
 		diagnostics.AddError("unable to parse bucket policy response", err.Error())
+		return nil
+	}
+
+	if returnBody.Data.Policy == nil {
 		return nil
 	}
 
