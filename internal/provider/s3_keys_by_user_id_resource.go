@@ -204,10 +204,7 @@ func (r *s3AccessSecretKeyResource) Read(ctx context.Context, req resource.ReadR
 	} else {
 		keyID := s3AccessKeyID(state)
 		if keyID == "" {
-			resp.Diagnostics.AddError(
-				"Error Reading StorageGrid access key",
-				"Could not read StorageGrid access key because neither access_key nor id is present in state.",
-			)
+			resp.State.RemoveResource(ctx)
 			return
 		}
 
