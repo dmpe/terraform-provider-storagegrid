@@ -4,7 +4,7 @@
 terraform {
   required_providers {
     storagegrid = {
-      source = "github.com/dmpe/storagegrid"
+      source = "dmpe/storagegrid"
     }
   }
 }
