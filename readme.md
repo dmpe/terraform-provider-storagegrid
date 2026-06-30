@@ -136,6 +136,74 @@ $ make lint
 ....
 ```
 
+## Terraform Acceptance Tests
+
+To run the Terraform acceptance tests, set the following environment variables:
+
+- `STORAGEGRID_TEST_GRID_VERSION` to the version of your StorageGRID instance
+- `STORAGEGRID_TEST_FEDERATED_USER` to the username of a federated user that exists in your StorageGRID instance
+  - only for StorageGRID versions 12.0 and higher
+
+Subsequently, execute the `make testacc` command.
+
+> [!WARNING] Real resources are created
+> Executing Terraform acceptance tests create real resources in your StorageGRID instance.
+> Those resources are also destroyed again as part of the test procedure.
+> Generally, names for resources created by the acceptance tests are prefixed with `terraform-acc-test-` and contain a
+> random string, however, naming conflicts might occur nonetheless.
+
+> [!NOTE] Test resources are required
+> Acceptance Tests of the provider's data sources require the read resources to already exist in the StorageGRID instance
+> used for testing.
+> Make sure to create those resources before running the acceptance tests.
+
+### Required Test Resources
+
+To run the Terraform acceptance tests, the following resources and configurations must be present in the StorageGRID
+instance used for testing.
+
+- **buckets**
+  - `tf-provider-acc-test-bucket`
+    - located in the region `us-east-1`
+    - having a capacity limit of 1 GB
+    - having the S3 object lock disabled
+    - and the following bucket policy attached
+```json
+{
+  "Statement": [
+    {
+      "Sid": "test-sid-1",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": [
+        "arn:aws:s3:::tf-provider-acc-test-bucket",
+        "arn:aws:s3:::tf-provider-acc-test-bucket/*"
+      ],
+      "Principal": "*"
+    },
+    {
+      "Sid": "test-sid-2",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::tf-provider-acc-test-bucket",
+        "arn:aws:s3:::tf-provider-acc-test-bucket/*"
+      ],
+      "Principal": "*"
+    }
+  ]
+}
+```
+  - `tf-provider-acc-test-bucket-ol`
+    - located in the region `us-east-1`
+    - having the S3 object lock enabled with mode `GOVERNANCE` and a retention period of 10 days
+- **federated users** (only StorageGRID version 12 or newer)
+  - an identity federation set up in which a user with a given name can be imported
+    - use the `STORAGEGRID_TEST_FEDERATED_USER` environment variable to specify the name of the user to import
+
 ## Contributors
 
 This project has received significant contributions by:

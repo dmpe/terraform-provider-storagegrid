@@ -37,7 +37,7 @@ resource "storagegrid_users" "new-local-user" {
 ### Read-Only
 
 - `account_id` (String)
-- `federated` (Boolean) True if the User is federated, for example, an LDAP User
+- `federated` (Boolean, Deprecated) True if the User is federated, for example, an LDAP User
 - `id` (String) The ID of this resource.
 - `user_urn` (String)
 

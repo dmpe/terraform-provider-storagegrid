@@ -78,6 +78,7 @@ func (r *usersResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
+				DeprecationMessage: "This attribute will be removed in a future release. Use the 'federated_users' resource instead when working with StorageGRID 12 or higher.",
 			},
 			"user_urn": schema.StringAttribute{
 				Computed: true,

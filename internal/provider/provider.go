@@ -234,6 +234,7 @@ func (p *storagegridProvider) Resources(ctx context.Context) []func() resource.R
 		NewS3AccessSecretKeyCurrentUserResource,
 		NewS3AccessSecretKeyResource,
 		NewUsersResource,
+		NewFederatedUsersResource,
 	}
 }
 
