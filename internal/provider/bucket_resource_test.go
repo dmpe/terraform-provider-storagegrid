@@ -5,6 +5,7 @@ package provider
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,8 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const (
-	defaultRegion = "us-east-1"
+var (
+	defaultRegion = os.Getenv("STORAGEGRID_TEST_DEFAULT_REGION")
 )
 
 func TestBucketResource_DefaultRegion(t *testing.T) {
@@ -234,7 +235,7 @@ func TestBucketResource_ObjectLockConfiguration(t *testing.T) {
 	})
 
 	t.Run("days and years with terraform variables succeed", func(t *testing.T) {
-		config := `
+		config := fmt.Sprintf(`
 variable "days" {
 	type = number
 	default = 30
@@ -242,14 +243,14 @@ variable "days" {
 
 resource "storagegrid_bucket" "test" {
   name = "tf-provider-acc-test-bucket-days-years"
-  region = "us-east-1"
+  region = "%s"
 
   object_lock_configuration {
     mode = "compliance"
     days = var.days
   }
 }
-`
+`, defaultRegion)
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 				"storagegrid": providerserver.NewProtocol6WithError(New("test")()),
@@ -259,7 +260,7 @@ resource "storagegrid_bucket" "test" {
 					Config: config,
 					Check: resource.ComposeAggregateTestCheckFunc(
 						resource.TestCheckResourceAttr("storagegrid_bucket.test", "name", "tf-provider-acc-test-bucket-days-years"),
-						resource.TestCheckResourceAttr("storagegrid_bucket.test", "region", "us-east-1"),
+						resource.TestCheckResourceAttr("storagegrid_bucket.test", "region", defaultRegion),
 						resource.TestCheckResourceAttr("storagegrid_bucket.test", "object_lock_configuration.mode", "compliance"),
 						resource.TestCheckNoResourceAttr("storagegrid_bucket.test", "object_lock_configuration.years"),
 						resource.TestCheckResourceAttr("storagegrid_bucket.test", "object_lock_configuration.days", "30"),

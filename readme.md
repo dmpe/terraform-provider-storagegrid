@@ -143,6 +143,7 @@ To run the Terraform acceptance tests, set the following environment variables:
 - `STORAGEGRID_TEST_GRID_VERSION` to the version of your StorageGRID instance
 - `STORAGEGRID_TEST_FEDERATED_USER` to the username of a federated user that exists in your StorageGRID instance
   - only for StorageGRID versions 12.0 and higher
+- `STORAGEGRID_TEST_DEFAULT_REGION` to the default region of your StorageGRID instance
 
 Subsequently, execute the `make testacc` command.
 
