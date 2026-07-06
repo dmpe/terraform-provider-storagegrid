@@ -1,4 +1,4 @@
-# Copyright (c) github.com/dmpe
+# Copyright github.com/dmpe 2024, 2026
 # SPDX-License-Identifier: MIT
 
 # Copy this file to an empty directory as main.tf, or run it from this directory.

@@ -1,4 +1,4 @@
-// Copyright (c) HashiCorp, Inc.
+// Copyright github.com/dmpe 2024, 2026
 
 package main
 

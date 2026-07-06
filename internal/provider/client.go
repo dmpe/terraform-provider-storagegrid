@@ -1,4 +1,4 @@
-// Copyright (c) github.com/dmpe
+// Copyright github.com/dmpe 2024, 2026
 // SPDX-License-Identifier: MIT
 
 // This file is borrowed and further adjusted from https://github.com/goharbor/terraform-provider-harbor/blob/main/client/client.go

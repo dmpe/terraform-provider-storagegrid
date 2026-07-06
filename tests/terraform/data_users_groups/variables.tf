@@ -1,4 +1,4 @@
-# Copyright (c) github.com/dmpe
+# Copyright github.com/dmpe 2024, 2026
 # SPDX-License-Identifier: MIT
 
 variable "vault_domain" {

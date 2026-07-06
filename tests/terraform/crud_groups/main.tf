@@ -1,4 +1,4 @@
-# Copyright (c) HashiCorp, Inc.
+# Copyright github.com/dmpe 2024, 2026
 
 terraform {
   required_providers {
