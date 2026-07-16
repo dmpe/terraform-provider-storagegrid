@@ -12,8 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -71,16 +69,16 @@ func (r *s3AccessSecretKeyResource) Schema(ctx context.Context, req resource.Sch
 			},
 			"access_key": schema.StringAttribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+				// PlanModifiers: []planmodifier.String{
+				// 	stringplanmodifier.UseStateForUnknown(),
+				// },
 				Description: "generated automatically (returned only when generated and otherwise omitted)",
 			},
 			"secret_access_key": schema.StringAttribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+				// PlanModifiers: []planmodifier.String{
+				// 	stringplanmodifier.UseStateForUnknown(),
+				// },
 				Description: "generated automatically (returned only when generated and otherwise omitted)",
 			},
 		},
@@ -148,19 +146,25 @@ func (r *s3AccessSecretKeyResource) Create(ctx context.Context, req resource.Cre
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to parse response, got error: %s", err))
 		return
 	}
-	fmt.Println(returnBody.Data)
-	tflog.Debug(ctx, "4. Mapping json body back to the state file.")
-	acsKeyData := &S3AccessKeyResourceModel{
+
+	tflog.Debug(ctx, "4. Check if expires field is the same data as planned")
+	if expiresConfig.ValueString() != "" && !EqualDates(plan.Expires.ValueString(), returnBody.Data.Expires) {
+		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Expiration date received from API differs. Received: %s, Planned: %s", returnBody.Data.Expires, plan.Expires.ValueString()))
+		return
+	}
+
+	tflog.Debug(ctx, "5. Mapping json body back to the state file.")
+	acsKeyData := S3AccessKeyResourceModel{
 		ID:              types.StringValue(returnBody.Data.ID),
 		AccountId:       types.StringValue(returnBody.Data.AccountId),
 		DisplayName:     types.StringValue(returnBody.Data.DisplayName),
 		UserURN:         types.StringValue(returnBody.Data.UserURN),
 		UserUUID:        types.StringValue(returnBody.Data.UserUUID),
-		Expires:         types.StringValue(returnBody.Data.Expires),
+		Expires:         types.StringValue(plan.Expires.ValueString()),
 		AccessKey:       types.StringValue(returnBody.Data.AccessKey),
 		SecretAccessKey: types.StringValue(returnBody.Data.SecretAccessKey),
 	}
-	plan = *acsKeyData
+	plan = acsKeyData
 
 	// Write logs using the tflog package
 	// Documentation: https://terraform.io/plugin/log
@@ -256,7 +260,7 @@ func (r *s3AccessSecretKeyResource) Read(ctx context.Context, req resource.ReadR
 		DisplayName:     types.StringValue(returnBody.Data.DisplayName),
 		UserURN:         types.StringValue(returnBody.Data.UserURN),
 		UserUUID:        types.StringValue(returnBody.Data.UserUUID),
-		Expires:         types.StringValue(returnBody.Data.Expires),
+		Expires:         state.Expires,
 		AccessKey:       state.AccessKey,
 		SecretAccessKey: state.SecretAccessKey,
 	}
