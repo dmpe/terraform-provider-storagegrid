@@ -29,5 +29,5 @@ Create S3 access and secret key pair for an user - a resource
 - `account_id` (String) Storage Tenant Account ID
 - `display_name` (String) Obfuscated access key
 - `id` (String) A unique identifier for the S3 credential pair (automatically assigned when an access key is created)
-- `secret_access_key` (String) generated automatically (returned only when generated and otherwise omitted)
+- `secret_access_key` (String, Sensitive) generated automatically (returned only when generated and otherwise omitted)
 - `user_urn` (String) Contains the user name and account ID (generated automatically)
