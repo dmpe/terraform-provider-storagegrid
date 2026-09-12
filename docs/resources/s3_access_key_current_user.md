@@ -29,5 +29,5 @@ Create S3 access and secret key pair for current user - a resource
 - `account_id` (String)
 - `display_name` (String)
 - `id` (String) The ID of this resource.
-- `secret_access_key` (String)
+- `secret_access_key` (String, Sensitive)
 - `user_urn` (String)
