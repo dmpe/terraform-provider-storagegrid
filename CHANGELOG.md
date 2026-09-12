@@ -1,3 +1,9 @@
+## 1.17.0
+
+- Update dependencies.
+- [the S3 secret access keys minted by storagegrid_s3_access_key and storagegrid_s3_access_key_current_user are not marked Sensitive](https://github.com/dmpe/terraform-provider-storagegrid/security/advisories/GHSA-qjqv-jx7x-c7g6) as fixed by @kta1kri. Thanks.
+
+
 ## 1.14.0
 
 - Update of documentation.
