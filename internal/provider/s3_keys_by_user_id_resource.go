@@ -75,7 +75,8 @@ func (r *s3AccessSecretKeyResource) Schema(ctx context.Context, req resource.Sch
 				Description: "generated automatically (returned only when generated and otherwise omitted)",
 			},
 			"secret_access_key": schema.StringAttribute{
-				Computed: true,
+				Computed:  true,
+				Sensitive: true,
 				// PlanModifiers: []planmodifier.String{
 				// 	stringplanmodifier.UseStateForUnknown(),
 				// },
