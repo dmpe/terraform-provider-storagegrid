@@ -70,7 +70,8 @@ func (r *s3AccessSecretKeyCurrentUserResource) Schema(_ context.Context, _ resou
 				},
 			},
 			"secret_access_key": schema.StringAttribute{
-				Computed: true,
+				Computed:  true,
+				Sensitive: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
