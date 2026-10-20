@@ -57,6 +57,7 @@ type GroupsDataSourceModel struct {
 type PoliciesModel struct {
 	Management *ManagementPolicyDataModel `tfsdk:"management"`
 	S3         *S3PolicyDataModel         `tfsdk:"s3"`
+	S3Trust    *S3TrustPolicyDataModel    `tfsdk:"s3_trust"`
 }
 
 type ManagementPolicyDataModel struct {
@@ -202,6 +203,7 @@ func (r *ActionField) UnmarshalJSON(data []byte) error {
 type Policies struct {
 	Management ManagementPolicy `json:"management"`
 	S3         S3Policy         `json:"s3"`
+	S3Trust    *S3TrustPolicy   `json:"s3Trust,omitempty"`
 }
 
 type ManagementPolicy struct {
@@ -253,6 +255,7 @@ These are for creating new group (as part of resources)
 type GroupPostPolicies struct {
 	Management ManagementPolicy `json:"management"`
 	S3         S3PostPolicy     `json:"s3"`
+	S3Trust    *S3TrustPolicy   `json:"s3Trust,omitempty"`
 }
 
 type S3PostPolicy struct {
