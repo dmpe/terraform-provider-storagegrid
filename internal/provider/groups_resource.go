@@ -134,6 +134,7 @@ Other LDAP: Identify the appropriate unique name value for the LDAP server.`,
 							},
 						},
 					},
+					"s3_trust": s3TrustResourceSchema(),
 					"s3": schema.SingleNestedAttribute{
 						Required: true,
 						Attributes: map[string]schema.Attribute{
@@ -322,6 +323,7 @@ func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest,
 		Policies: GroupPostPolicies{
 			Management: *mgmtPolicies,
 			S3:         *s3Policy,
+			S3Trust:    s3TrustPolicyToAPI(plan.Policies.S3Trust),
 		},
 	}
 
@@ -392,6 +394,7 @@ func (r *groupsResource) Create(ctx context.Context, req resource.CreateRequest,
 	newPolicies := &PoliciesModel{
 		Management: returnMgmtPolicies,
 		S3:         returnS3Policy,
+		S3Trust:    s3TrustPolicyFromAPI(returnBody.Data.Policies.S3Trust),
 	}
 
 	plan.Policies = newPolicies
@@ -484,6 +487,7 @@ func (r *groupsResource) Read(ctx context.Context, req resource.ReadRequest, res
 	newPolicies := &PoliciesModel{
 		Management: returnMgmtPolicies,
 		S3:         returnS3Policy,
+		S3Trust:    s3TrustPolicyFromAPI(returnBody.Data.Policies.S3Trust),
 	}
 
 	state.Policies = newPolicies
@@ -580,6 +584,7 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 		Policies: GroupPostPolicies{
 			Management: *mgmtPolicies,
 			S3:         *s3Policy,
+			S3Trust:    s3TrustPolicyToAPI(plan.Policies.S3Trust),
 		},
 	}
 
@@ -665,6 +670,7 @@ func (r *groupsResource) Update(ctx context.Context, req resource.UpdateRequest,
 	newPolicies := &PoliciesModel{
 		Management: returnMgmtPolicies,
 		S3:         returnS3Policy,
+		S3Trust:    s3TrustPolicyFromAPI(returnBody.Data.Policies.S3Trust),
 	}
 
 	state.Policies = newPolicies

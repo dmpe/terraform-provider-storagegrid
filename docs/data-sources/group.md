@@ -65,6 +65,7 @@ Read-Only:
 
 - `management` (Attributes) (see [below for nested schema](#nestedatt--policies--management))
 - `s3` (Attributes) (see [below for nested schema](#nestedatt--policies--s3))
+- `s3_trust` (Attributes) Trust policy that specifies the principals allowed to assume this group through the StorageGRID AssumeRole API. (see [below for nested schema](#nestedatt--policies--s3_trust))
 
 <a id="nestedatt--policies--management"></a>
 ### Nested Schema for `policies.management`
@@ -101,4 +102,24 @@ Optional:
 - `not_action` (List of String) the specific exceptional actions (Can be a string if only one element. A statement must have either Action or NotAction.)
 - `not_resource` (List of String) the objects that the statement does not cover (Can be a string if only one element. A statement must have either Resource or NotResource.)
 - `resource` (List of String) the objects that the statement covers (Can be a string if only one element. A statement must have either Resource or NotResource.)
+- `sid` (String) an optional identifier that you provide for the policy statement
+
+
+
+<a id="nestedatt--policies--s3_trust"></a>
+### Nested Schema for `policies.s3_trust`
+
+Read-Only:
+
+- `statement` (Attributes List) a list of trust policy statements (see [below for nested schema](#nestedatt--policies--s3_trust--statement))
+- `version` (String) Policy language version.
+
+<a id="nestedatt--policies--s3_trust--statement"></a>
+### Nested Schema for `policies.s3_trust.statement`
+
+Read-Only:
+
+- `action` (List of String) the actions this statement applies to
+- `effect` (String) the specific result of the statement (either an allow or an explicit deny)
+- `principal_aws` (List of String) ARNs/URNs of the principals (Principal.AWS) allowed to assume this group, e.g. urn:sgws:identity::<account_id>:user/<name>.
 - `sid` (String) an optional identifier that you provide for the policy statement

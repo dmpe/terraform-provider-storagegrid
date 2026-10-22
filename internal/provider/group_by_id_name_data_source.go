@@ -103,6 +103,7 @@ func (d *groupDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 							},
 						},
 					},
+					"s3_trust": s3TrustDataSourceSchema(),
 					"s3": schema.SingleNestedAttribute{
 						Computed: true,
 						Attributes: map[string]schema.Attribute{
@@ -295,6 +296,7 @@ func (d *groupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		Policies: &PoliciesModel{
 			Management: mgmtPolicies,
 			S3:         s3Policy,
+			S3Trust:    s3TrustPolicyFromAPI(jsonData.Data.Policies.S3Trust),
 		},
 	}
 	state = *groupDataSingle

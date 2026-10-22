@@ -1,3 +1,8 @@
+## 1.18.0
+
+- Add optional `policies.s3_trust` to `storagegrid_groups` and the group data sources, so groups used as AssumeRole targets keep their trust policy on update.
+
+
 ## 1.17.0
 
 - Update dependencies.

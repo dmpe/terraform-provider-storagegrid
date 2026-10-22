@@ -20,5 +20,15 @@ resource "storagegrid_groups" "new-local-group" {
         }
       ]
     }
+    s3_trust = {
+      version = "2012-10-17"
+      statement = [
+        {
+          effect        = "Allow"
+          action        = ["sts:AssumeRole"]
+          principal_aws = ["urn:sgws:identity::12345678901234567890:user/vault"]
+        }
+      ]
+    }
   }
 }
