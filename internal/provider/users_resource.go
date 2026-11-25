@@ -218,10 +218,19 @@ func (r *usersResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	tflog.Debug(ctx, "3. Adopt Group Membership from API")
-	// Adopt member_of from API response like all other fields
-	apiMemberOf := make([]types.String, len(returnBody.Data.MemberOf))
-	for idx, member := range returnBody.Data.MemberOf {
-		apiMemberOf[idx] = types.StringValue(member)
+	// Adopt member_of from API response like all other fields. If the API returns
+	// the same groups as state (in any order), keep the state order to avoid
+	// false diffs on the list. This also covers import, where state is empty.
+	groupMembers := make([]string, len(state.MemberOf))
+	for idx, groupMember := range state.MemberOf {
+		groupMembers[idx] = groupMember.ValueString()
+	}
+	apiMemberOf := state.MemberOf
+	if !EqualElements(returnBody.Data.MemberOf, groupMembers) {
+		apiMemberOf = make([]types.String, len(returnBody.Data.MemberOf))
+		for idx, member := range returnBody.Data.MemberOf {
+			apiMemberOf[idx] = types.StringValue(member)
+		}
 	}
 
 	tflog.Debug(ctx, "4. Overwrite fields with refreshed information.")
