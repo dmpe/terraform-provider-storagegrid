@@ -217,14 +217,11 @@ func (r *usersResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	tflog.Debug(ctx, "3. Compare Group Membership")
-	groupMembers := make([]string, len(state.MemberOf))
-	for idx, groupMember := range state.MemberOf {
-		groupMembers[idx] = groupMember.ValueString()
-	}
-	if !EqualElements(returnBody.Data.MemberOf, groupMembers) {
-		resp.Diagnostics.AddError("MemberOf Mismatch", fmt.Sprintf("Expected %v, got %v", groupMembers, returnBody.Data.MemberOf))
-		return
+	tflog.Debug(ctx, "3. Adopt Group Membership from API")
+	// Adopt member_of from API response like all other fields
+	apiMemberOf := make([]types.String, len(returnBody.Data.MemberOf))
+	for idx, member := range returnBody.Data.MemberOf {
+		apiMemberOf[idx] = types.StringValue(member)
 	}
 
 	tflog.Debug(ctx, "4. Overwrite fields with refreshed information.")
@@ -236,7 +233,7 @@ func (r *usersResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		ID:         types.StringValue(returnBody.Data.ID),
 		Federated:  types.BoolValue(returnBody.Data.Federated),
 		UserURN:    types.StringValue(returnBody.Data.UserURN),
-		MemberOf:   state.MemberOf,
+		MemberOf:   apiMemberOf,
 	}
 
 	// Set the refreshed state
