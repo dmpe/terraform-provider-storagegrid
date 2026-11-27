@@ -355,8 +355,8 @@ func (d *tenantConfigDataSource) Read(ctx context.Context, req datasource.ReadRe
 	account.ID = types.StringValue(config.Data.Account.ID)
 	account.Name = types.StringValue(config.Data.Account.Name)
 	account.Capabilities = make([]types.String, len(config.Data.Account.Capabilities))
-	for i, cap := range config.Data.Account.Capabilities {
-		account.Capabilities[i] = types.StringValue(cap)
+	for i, capability := range config.Data.Account.Capabilities {
+		account.Capabilities[i] = types.StringValue(capability)
 	}
 	account.Policy = &policy
 	account.Replica = types.BoolValue(config.Data.Account.Replica)
