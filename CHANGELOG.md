@@ -1,3 +1,9 @@
+## 1.19.0
+
+- Update dependencies.
+- Fix importing of users when they have more than 1 group. Thanks to @Jonher937 in [this PR](https://github.com/dmpe/terraform-provider-storagegrid/pull/61)
+
+
 ## 1.18.0
 
 - Add optional `policies.s3_trust` to `storagegrid_groups` and the group data sources, so groups used as AssumeRole targets keep their trust policy on update.
