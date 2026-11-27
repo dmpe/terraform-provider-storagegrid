@@ -1,5 +1,6 @@
-## 1.19.0
+## 1.20.0
 
+- `v1.19.0` is bad release. Dont use it.
 - Update dependencies.
 - Fix importing of users when they have more than 1 group. Thanks to @Jonher937 in [this PR](https://github.com/dmpe/terraform-provider-storagegrid/pull/61)
 
